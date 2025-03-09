@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Masasamjant.Http", "Masasamjant.Http\Masasamjant.Http.csproj", "{92570752-A98B-4A63-B960-FC17FEB6452C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92570752-A98B-4A63-B960-FC17FEB6452C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92570752-A98B-4A63-B960-FC17FEB6452C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92570752-A98B-4A63-B960-FC17FEB6452C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92570752-A98B-4A63-B960-FC17FEB6452C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{92570752-A98B-4A63-B960-FC17FEB6452C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E353EB0F-FAFD-4F32-A381-5438EA066CD0}
+	EndGlobalSection
+EndGlobal
