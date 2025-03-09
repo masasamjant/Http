@@ -1,5 +1,5 @@
-﻿using Masasamjant.Http.Abstractions;
-using Masasamjant.Http.Configuration;
+﻿using Masasamjant.Configuration;
+using Masasamjant.Http.Abstractions;
 using Microsoft.Extensions.Configuration;
 
 namespace Masasamjant.Http
