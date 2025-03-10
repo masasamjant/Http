@@ -1,5 +1,6 @@
 ﻿using Masasamjant.Http.Interceptors;
 using Masasamjant.Http.Listeners;
+using System.Net.Http.Headers;
 
 namespace Masasamjant.Http.Abstractions
 {
@@ -140,6 +141,20 @@ namespace Masasamjant.Http.Abstractions
         {
             foreach (var listener in HttpClientListeners)
                 await listener.OnErrorAsync(request, exception);
+        }
+
+        protected static void AddHttpHeaders(HttpRequest request, HttpHeaders headers)
+        {
+            if (request.Headers.Count == 0)
+                return;
+
+            foreach (var header in request.Headers)
+            {
+                if (headers.Contains(header.Name))
+                    headers.Remove(header.Name);
+
+                headers.Add(header.Name, header.Value);
+            }
         }
     }
 }

@@ -43,6 +43,9 @@ namespace Masasamjant.Http.Json
                     return default;
                 }
 
+                // Add HTTP headers defined in request.
+                AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
+
                 // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
 
@@ -97,6 +100,9 @@ namespace Masasamjant.Http.Json
                     return default;
                 }
 
+                // Add HTTP headers defined in request.
+                AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
+
                 // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
 
@@ -137,6 +143,9 @@ namespace Masasamjant.Http.Json
                     request.Cancel();
                     return;
                 }
+
+                // Add HTTP headers defined in request.
+                AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
 
                 // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
