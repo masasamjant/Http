@@ -10,6 +10,58 @@ namespace Masasamjant.Http.Demo.Controllers
     {
         private static readonly List<CarViewModel> carList = new List<CarViewModel>();
 
+        static CarsController()
+        {
+            carList.Add(new CarViewModel
+            {
+                Identifier = Guid.NewGuid(),
+                Manufacturer = "Toyota",
+                Model = "Corolla",
+                RegisterNumber = "ABC-123",
+                ModelYear = 2020,
+                ProductionYear = 2019,
+                Seats = 5,
+                Engine = EngineType.Petrol,
+                CarType = CarType.Sedan
+            });
+            carList.Add(new CarViewModel
+            {
+                Identifier = Guid.NewGuid(),
+                Manufacturer = "Tesla",
+                Model = "Model S",
+                RegisterNumber = "XYZ-789",
+                ModelYear = 2021,
+                ProductionYear = 2020,
+                Seats = 5,
+                Engine = EngineType.Electric,
+                CarType = CarType.Sedan
+            });
+            carList.Add(new CarViewModel
+            {
+                Identifier = Guid.NewGuid(),
+                Manufacturer = "Ford",
+                Model = "Mustang",
+                RegisterNumber = "MST-456",
+                ModelYear = 2022,
+                ProductionYear = 2021,
+                Seats = 4,
+                Engine = EngineType.Petrol,
+                CarType = CarType.Coupe
+            });
+            carList.Add(new CarViewModel
+            {
+                Identifier = Guid.NewGuid(),
+                Manufacturer = "Volkswagen",
+                Model = "Golf",
+                RegisterNumber = "GOL-321",
+                ModelYear = 2019,
+                ProductionYear = 2018,
+                Seats = 5,
+                Engine = EngineType.Diesel,
+                CarType = CarType.Hatchback
+            });
+        }
+
         [HttpGet]
         [Route("api/GetCars")]
         public IActionResult GetCars()
