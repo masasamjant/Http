@@ -69,19 +69,19 @@ namespace Masasamjant.Http.Abstractions
         /// </summary>
         /// <param name="request">The intercepted <see cref="HttpGetRequest"/>.</param>
         /// <returns><c>true</c> if <paramref name="request"/> should be canceled; <c>false</c> otherwise.</returns>
-        protected async Task<bool> CancelAfterInterceptorsAsync(HttpGetRequest request)
+        protected async Task<HttpRequestInterception> ExecuteInterceptorsAsync(HttpGetRequest request)
         {
             // Execute each interceptor and check if some indicated that request should be canceled.
             foreach (var interceptor in HttpGetRequestInterceptors)
             { 
                 var interception = await interceptor.InterceptAsync(request);
 
-                if (interception == HttpRequestInterception.Cancel)
-                    return true;
+                if (interception.Result == HttpRequestInterceptionResult.Cancel)
+                    return interception;
             }
 
             // No interceptors or none indicated cancellation.
-            return false;
+            return HttpRequestInterception.Continue;
         }
 
         /// <summary>
@@ -91,19 +91,19 @@ namespace Masasamjant.Http.Abstractions
         /// </summary>
         /// <param name="request">The intercepted <see cref="HttpPostRequest"/>.</param>
         /// <returns><c>true</c> if <paramref name="request"/> should be canceled; <c>false</c> otherwise.</returns>
-        protected async Task<bool> CancelAfterInterceptorsAsync(HttpPostRequest request)
+        protected async Task<HttpRequestInterception> ExecuteInterceptorsAsync(HttpPostRequest request)
         {
             // Execute each interceptor and check if some indicated that request should be canceled.
             foreach (var interceptor in HttpPostRequestInterceptors)
             {
                 var interception = await interceptor.InterceptAsync(request);
 
-                if (interception == HttpRequestInterception.Cancel)
-                    return true;
+                if (interception.Result == HttpRequestInterceptionResult.Cancel)
+                    return interception;
             }
 
             // No interceptors or none indicated cancellation.
-            return false;
+            return HttpRequestInterception.Continue;
         }
 
         /// <summary>
@@ -143,6 +143,11 @@ namespace Masasamjant.Http.Abstractions
                 await listener.OnErrorAsync(request, exception);
         }
 
+        /// <summary>
+        /// Adds HTTP headers from specified <see cref="HttpRequest"/> to specified <see cref="HttpHeaders"/>.
+        /// </summary>
+        /// <param name="request">The HTTP request to read headers.</param>
+        /// <param name="headers">The <see cref="HttpHeaders"/> to set headers.</param>
         protected static void AddHttpHeaders(HttpRequest request, HttpHeaders headers)
         {
             if (request.Headers.Count == 0)
@@ -155,6 +160,23 @@ namespace Masasamjant.Http.Abstractions
 
                 headers.Add(header.Name, header.Value);
             }
+        }
+
+        /// <summary>
+        /// Creates <see cref="HttpRequestInterceptionException"/> based on specified <see cref="HttpRequest"/> and <see cref="HttpRequestInterception"/>.
+        /// </summary>
+        /// <param name="request">The intercepted HTTP request.</param>
+        /// <param name="interception">The <see cref="HttpRequestInterception"/> that indicates that request should be canceled.</param>
+        /// <returns>A <see cref="HttpRequestInterceptionException"/>.</returns>
+        /// <exception cref="ArgumentException">If <paramref name="interception"/> indicates that request should not be canceled.</exception>
+        protected static HttpRequestInterceptionException GetInterceptionException(HttpRequest request, HttpRequestInterception interception)
+        {
+            if (!interception.CancelRequest)
+                throw new ArgumentException("The interception indicates that request should not be canceled.", nameof(interception));
+
+            return string.IsNullOrWhiteSpace(interception.CancelReason)
+                ? new HttpRequestInterceptionException(request)
+                : new HttpRequestInterceptionException(interception.CancelReason, request);
         }
     }
 }

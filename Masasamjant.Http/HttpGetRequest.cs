@@ -7,7 +7,7 @@ namespace Masasamjant.Http
     /// <summary>
     /// Represents HTTP Get request.
     /// </summary>
-    public sealed class HttpGetRequest : HttpRequest
+    public sealed class HttpGetRequest : HttpRequest, ICloneable
     {
         /// <summary>
         /// Initializes new instance of the <see cref="HttpGetRequest"/> class.
@@ -71,6 +71,20 @@ namespace Masasamjant.Http
             return FullRequestUri;
         }
 
+        /// <summary>
+        /// Creates copy from this request.
+        /// </summary>
+        /// <returns>A copy from this request.</returns>
+        public HttpGetRequest Clone()
+        {
+            var parameters = new HttpParameterCollection();
+            foreach (var parameter in Parameters)
+                parameters.Add(parameter.Clone());
+            var request = new HttpGetRequest(RequestUri, parameters, Caching);
+            CloneHeadersTo(request);
+            return request;
+        }
+
         private string CreateQueryString()
         {
             var parameters = Parameters.ToList();
@@ -87,6 +101,11 @@ namespace Masasamjant.Http
             }
 
             return builder.ToString().TrimEnd('&');
+        }
+
+        object ICloneable.Clone()
+        {
+            return this.Clone();
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Masasamjant.Http
     /// <summary>
     /// Represents HTTP Post request.
     /// </summary>
-    public class HttpPostRequest : HttpRequest
+    public class HttpPostRequest : HttpRequest, ICloneable
     {
         /// <summary>
         /// Initializes new instance of the <see cref="HttpPostRequest"/> class.
@@ -23,6 +23,23 @@ namespace Masasamjant.Http
         /// Gets the posted data.
         /// </summary>
         public object Data { get; }
+
+        /// <summary>
+        /// Creates copy from this request. Request data is copied only if it implements <see cref="ICloneable"/> interface.
+        /// </summary>
+        /// <returns>A copy from this request.</returns>
+        public HttpPostRequest Clone()
+        {
+            var data = Data is ICloneable cloneable ? cloneable.Clone() : Data;
+            var request = new HttpPostRequest(RequestUri, data);
+            CloneHeadersTo(request);
+            return request;
+        }
+
+        object ICloneable.Clone()
+        {
+            return this.Clone();
+        }
     }
 
     /// <summary>
@@ -47,6 +64,18 @@ namespace Masasamjant.Http
         public new T Data
         {
             get { return (T)base.Data; }    
+        }
+
+        /// <summary>
+        /// Creates copy from this request. Request data is copied only if it implements <see cref="ICloneable"/> interface.
+        /// </summary>
+        /// <returns>A copy from this request.</returns>
+        public new HttpPostRequest<T> Clone() 
+        {
+            var data = Data is ICloneable cloneable ? (T)cloneable.Clone() : Data;
+            var request = new HttpPostRequest<T>(RequestUri, data);
+            CloneHeadersTo(request);
+            return request;
         }
     }
 }

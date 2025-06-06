@@ -1,0 +1,33 @@
+﻿@model CarViewModel
+@{
+    ViewData["Title"] = "Car";
+}
+<h3>Car</h3>
+<div class="card">
+    <div class="card-body">
+        <div class="mb-3">
+            <strong><label asp-for="Manufacturer"></label></strong>: @Model.Manufacturer
+        </div>
+        <div class="mb-3">
+            <strong><label asp-for="Model"></label></strong>: @Model.Model
+        </div>
+        <div class="mb-3">
+            <strong><label asp-for="RegisterNumber"></label></strong>: @Model.RegisterNumber
+        </div>
+        <div class="mb-3">
+            <strong><label asp-for="ModelYear"></label></strong>: @Model.ModelYear
+        </div>
+        <div class="mb-3">
+            <strong><label asp-for="ProductionYear"></label></strong>: @Model.ProductionYear
+        </div>
+        <div class="mb-3">
+            <strong><label asp-for="Seats"></label></strong>: @Model.Seats
+        </div>
+        <div class="mb-3">
+            <strong><label asp-for="Engine"></label></strong>: @Model.Engine
+        </div>
+        <div class="mb-3">
+            <strong><label asp-for="CarType"></label></strong>: @Model.CarType
+        </div>
+    </div>
+</div>

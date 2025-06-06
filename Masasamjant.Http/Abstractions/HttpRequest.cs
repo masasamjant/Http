@@ -96,5 +96,17 @@
         {
             Canceled?.Invoke(this, EventArgs.Empty);    
         }
+
+        /// <summary>
+        /// Copies headers of this request to specified <see cref="HttpRequest"/> instance.
+        /// </summary>
+        /// <param name="request">The request to copy headers to.</param>
+        protected void CloneHeadersTo(HttpRequest request)
+        {
+            foreach (var header in Headers)
+            {
+                request.Headers.Add(header.Clone());
+            }
+        }
     }
 }

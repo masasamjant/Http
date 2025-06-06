@@ -1,0 +1,62 @@
+﻿@model CarViewModel
+@{
+    ViewData["Title"] = "Add Car";
+}
+<h3>Add Car</h3>
+<form method="post" asp-action="Add" asp-asp-controller="Home">
+    <div class="mb-3">
+        <label asp-for="Identifier" class="form-label"></label>
+        <input asp-for="Identifier" class="form-control w-25" />
+        <input asp-for="GenerateNewIdentifier" type="checkbox" />
+        <label asp-for="GenerateNewIdentifier" class="form-label">Generate New Identifier</label>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Manufacturer" class="form-label"></label>
+        <input asp-for="Manufacturer" class="form-control w-25" />
+        <span asp-validation-for="Manufacturer" class="text-danger"></span>
+     </div>
+     <div class="mb-3">
+        <label asp-for="Model" class="form-label"></label>
+        <input asp-for="Model" class="form-control w-25" />
+        <span asp-validation-for="Model" class="text-danger"></span>
+     </div>
+     <div class="mb-3">
+        <label asp-for="RegisterNumber" class="form-label"></label>
+        <input asp-for="RegisterNumber" class="form-control w-25" />
+        <span asp-validation-for="RegisterNumber" class="text-danger"></span>
+     </div>
+     <div class="mb-3">
+        <label asp-for="ModelYear" class="form-label"></label>
+        <input asp-for="ModelYear" class="form-control w-25" type="number" />
+        <span asp-validation-for="ModelYear" class="text-danger"></span>
+     </div>
+     <div class="mb-3">
+        <label asp-for="ProductionYear" class="form-label"></label>
+        <input asp-for="ProductionYear" class="form-control w-25" type="number" />
+        <span asp-validation-for="ProductionYear" class="text-danger"></span>
+     </div>
+     <div class="mb-3">
+        <label asp-for="Seats" class="form-label"></label>
+        <input asp-for="Seats" class="form-control w-25" type="number" />
+        <span asp-validation-for="Seats" class="text-danger"></span>
+     </div>
+     <div class="mb-3">
+        <label asp-for="Engine" class="form-label"></label>
+        <select asp-for="Engine" class="form-control w-25">
+            @foreach (var value in Enum.GetValues(typeof(EngineType)))
+            {
+                <option value="@((int)value)">@value.ToString()</option>
+            }
+        </select>
+     </div>
+     <div class="mb-3">
+        <label asp-for="CarType" class="form-label"></label>
+        <select asp-for="CarType" class="form-control w-25">
+            @foreach (var value in Enum.GetValues(typeof(CarType)))
+            {
+                <option value="@((int)value)">@value.ToString()</option>
+            }
+        </select>
+     </div>
+    <input type="submit" value="Add" />
+</form>

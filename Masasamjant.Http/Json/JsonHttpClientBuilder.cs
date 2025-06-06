@@ -20,25 +20,15 @@ namespace Masasamjant.Http.Json
         }
 
         /// <summary>
-        /// Builds instance of <see cref="JsonHttpClient"/> for specified purpose.
+        /// Creates instance of <see cref="JsonHttpClient"/> class.
         /// </summary>
-        /// <param name="clientPurpose">The purpose of the HTTP client.</param>
-        /// <returns>A <see cref="JsonHttpClient"/>.</returns>
-        public override IHttpClient Build(string clientPurpose)
+        /// <param name="clientPurpose"></param>
+        /// <returns></returns>
+        protected override IHttpClient CreateClient(string clientPurpose)
         {
             var baseAddressProvider = HttpBaseAddressProviderFactory.GetBaseAddressProvider(clientPurpose);
             var client = new JsonHttpClient(HttpClientFactory, baseAddressProvider);
-            ConfigureClient(client);
             return client;
-        }
-
-        /// <summary>
-        /// Configures instance of <see cref="JsonHttpClient"/> before it is used.
-        /// </summary>
-        /// <param name="client">The <see cref="JsonHttpClient"/> to configure.</param>
-        protected virtual void ConfigureClient(JsonHttpClient client)
-        {
-            return;
         }
     }
 }

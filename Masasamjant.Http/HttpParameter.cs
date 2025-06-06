@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents parameter of HTTP Get request.
     /// </summary>
-    public sealed class HttpParameter : IEquatable<HttpParameter>
+    public sealed class HttpParameter : IEquatable<HttpParameter>, ICloneable
     {
         /// <summary>
         /// Initializes new instance of the <see cref="HttpParameter"/> class.
@@ -78,6 +78,20 @@
                 return $"{Name}=";
 
             return $"{Name}={Value}";
+        }
+
+        /// <summary>
+        /// Creates a copy from this parameter.
+        /// </summary>
+        /// <returns>A copy from this parameter.</returns>
+        public HttpParameter Clone()
+        {
+            return new HttpParameter(Name, Value);
+        }
+
+        object ICloneable.Clone()
+        {
+            return this.Clone();
         }
     }
 }

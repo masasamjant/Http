@@ -1,0 +1,105 @@
+﻿@model IEnumerable<CarViewModel>
+@{
+    ViewData["Title"] = "Car List";
+    bool searchVisible = ViewData["SearchVisible"] != null && ViewData["SearchVisible"] is true;
+    string? executionTime = ViewBag.SearchExecutionTime as string;
+}
+<h3>Car List</h3>
+<a href="#" id="car-search-toggle">Search</a>
+<div id="car-search" data-search-visible="@searchVisible">
+    <form method="post" asp-action="Search" asp-controller="Home">
+        <div class="mb-3">
+            <label asp-for="@Model.First().Manufacturer" class="form-label"></label>
+            <input name="Manufacturer" class="form-control w-25" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="@Model.First().Model" class="form-label"></label>
+            <input name="Model" class="form-control w-25" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="@Model.First().RegisterNumber" class="form-label"></label>
+            <input name="RegisterNumber" class="form-control w-25" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="@Model.First().ModelYear" class="form-label"></label>
+            <input name="ModelYear" class="form-control w-25" type="number" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="@Model.First().ProductionYear" class="form-label"></label>
+            <input name="ProductionYear" class="form-control w-25" type="number" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="@Model.First().Seats" class="form-label"></label>
+            <input name="Seats" class="form-control w-25" type="number" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="@Model.First().Engine" class="form-label"></label>
+            <select name="Engine" class="form-control w-25">
+                @foreach (var value in Enum.GetValues(typeof(EngineType)))
+                {
+                    <option value="@((int)value)">@value.ToString()</option>
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label asp-for="@Model.First().CarType" class="form-label"></label>
+            <select name="CarType" class="form-control w-25">
+                @foreach (var value in Enum.GetValues(typeof(CarType)))
+                {
+                    <option value="@((int)value)">@value.ToString()</option>
+                }
+            </select>
+        </div>
+        <input type="submit" value="Search" />
+    </form>
+</div>
+@if (!string.IsNullOrEmpty(executionTime))
+{
+    <div class="alert alert-info mt-3">
+        Search executed in: @executionTime
+    </div>
+}
+<table>
+    <thead>
+        <tr>
+            <th>Manufacturer</th>
+            <th>Model</th>
+            <th>Register Number</th>
+            <th>Model Year</th>
+            <th>Production Year</th>
+            <th>Seats</th>
+            <th>Engine</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var car in Model)
+        {
+            <tr>
+                <td><a asp-action="Car" asp-controller="Home" asp-route-identifier="@car.Identifier">@car.Manufacturer</a></td>
+                <td>@car.Model</td>
+                <td>@car.RegisterNumber</td>
+                <td>@car.ModelYear</td>
+                <td>@car.ProductionYear</td>
+                <td>@car.Seats</td>
+                <td>@car.Engine</td>
+                <td>@car.CarType</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var visible = $('#car-search').data('search-visible');
+            if (visible === 'True') {
+                $('#car-search').show();
+            } else {
+                $('#car-search').hide();
+            }
+            $('#car-search-toggle').on('click', function() {
+                $('#car-search').toggle();
+            });
+        });
+    </script>
+}

@@ -9,6 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Masasamjant.Http", "Masasam
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{75C92CC0-3603-4FA3-9348-ACC5A8268C4B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Masasamjant.Http.UnitTests", "Masasamjant.Http.UnitTests\Masasamjant.Http.UnitTests.csproj", "{58FC6855-02EF-4061-BB67-14CB7F26D56C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "demo", "demo", "{48483C9B-1A2A-42EE-B3D3-CABD80264744}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Masasamjant.Http.Demo", "Masasamjant.Http.Demo\Masasamjant.Http.Demo.csproj", "{6C98DB61-BB51-429A-9322-758C243ADC76}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,12 +25,22 @@ Global
 		{92570752-A98B-4A63-B960-FC17FEB6452C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92570752-A98B-4A63-B960-FC17FEB6452C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92570752-A98B-4A63-B960-FC17FEB6452C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58FC6855-02EF-4061-BB67-14CB7F26D56C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58FC6855-02EF-4061-BB67-14CB7F26D56C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58FC6855-02EF-4061-BB67-14CB7F26D56C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58FC6855-02EF-4061-BB67-14CB7F26D56C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C98DB61-BB51-429A-9322-758C243ADC76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C98DB61-BB51-429A-9322-758C243ADC76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C98DB61-BB51-429A-9322-758C243ADC76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C98DB61-BB51-429A-9322-758C243ADC76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{92570752-A98B-4A63-B960-FC17FEB6452C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{58FC6855-02EF-4061-BB67-14CB7F26D56C} = {75C92CC0-3603-4FA3-9348-ACC5A8268C4B}
+		{6C98DB61-BB51-429A-9322-758C243ADC76} = {48483C9B-1A2A-42EE-B3D3-CABD80264744}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E353EB0F-FAFD-4F32-A381-5438EA066CD0}

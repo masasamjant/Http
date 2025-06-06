@@ -36,10 +36,16 @@ namespace Masasamjant.Http.Json
         {
             try
             {
-                // Execute interceptors and check if request should be canceled
-                if (await CancelAfterInterceptorsAsync(request)) 
+                // Execute interceptors an check if request should be canceled.
+                var interception = await ExecuteInterceptorsAsync(request);
+
+                if (interception.CancelRequest)
                 {
                     request.Cancel();
+
+                    if (interception.ThrowCancelException)
+                        throw GetInterceptionException(request, interception);
+
                     return default;
                 }
 
@@ -64,6 +70,9 @@ namespace Masasamjant.Http.Json
             {
                 // Inform listeners about request error.
                 await OnErrorHttpClientListenersAsync(request, exception);
+
+                if (exception is HttpRequestException)
+                    throw;
 
                 throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP GET request.", exception);
             }
@@ -94,9 +103,15 @@ namespace Masasamjant.Http.Json
             try
             {
                 // Execute interceptors an check if request should be canceled.
-                if (await CancelAfterInterceptorsAsync(request))
+                var interception = await ExecuteInterceptorsAsync(request);
+
+                if (interception.CancelRequest)
                 {
                     request.Cancel();
+
+                    if (interception.ThrowCancelException)
+                        throw GetInterceptionException(request, interception);
+
                     return default;
                 }
 
@@ -123,6 +138,9 @@ namespace Masasamjant.Http.Json
                 // Inform listeners about request error.
                 await OnErrorHttpClientListenersAsync(request, exception);
 
+                if (exception is HttpRequestException)
+                    throw;
+
                 throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP POST request.", exception);
             }
         }
@@ -138,9 +156,15 @@ namespace Masasamjant.Http.Json
             try
             {
                 // Execute interceptors an check if request should be canceled.
-                if (await CancelAfterInterceptorsAsync(request))
+                var interception = await ExecuteInterceptorsAsync(request);
+
+                if (interception.CancelRequest)
                 {
                     request.Cancel();
+
+                    if (interception.ThrowCancelException)
+                        throw GetInterceptionException(request, interception);
+
                     return;
                 }
 
@@ -161,6 +185,9 @@ namespace Masasamjant.Http.Json
             {
                 // Inform listeners about request error.
                 await OnErrorHttpClientListenersAsync(request, exception);
+
+                if (exception is HttpRequestException)
+                    throw;
 
                 throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP POST request.", exception);
             }

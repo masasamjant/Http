@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents header send with HTTP request.
     /// </summary>
-    public sealed class HttpHeader : IEquatable<HttpHeader>
+    public sealed class HttpHeader : IEquatable<HttpHeader>, ICloneable
     {
         /// <summary>
         /// Initializes new instance of the <see cref="HttpHeader"/> class.
@@ -57,6 +57,20 @@
         public override int GetHashCode() 
         {
             return Name.ToLowerInvariant().GetHashCode();
+        }
+
+        /// <summary>
+        /// Creates a copy from this header.
+        /// </summary>
+        /// <returns>A copy from this header.</returns>
+        public HttpHeader Clone()
+        {
+            return new HttpHeader(Name, Value);
+        }
+
+        object ICloneable.Clone()
+        {
+            throw new NotImplementedException();
         }
     }
 }
