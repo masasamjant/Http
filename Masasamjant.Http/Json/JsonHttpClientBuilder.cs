@@ -14,8 +14,9 @@ namespace Masasamjant.Http.Json
         /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="httpBaseAddressProviderFactory">The <see cref="IHttpBaseAddressProviderFactory"/>.</param>
-        public JsonHttpClientBuilder(IConfiguration configuration, IHttpClientFactory httpClientFactory, IHttpBaseAddressProviderFactory httpBaseAddressProviderFactory) 
-            : base(configuration, httpClientFactory, httpBaseAddressProviderFactory)
+        /// <param name="cacheManager">The <see cref="IHttpCacheManager"/>.</param>
+        public JsonHttpClientBuilder(IConfiguration configuration, IHttpClientFactory httpClientFactory, IHttpBaseAddressProviderFactory httpBaseAddressProviderFactory, IHttpCacheManager? cacheManager) 
+            : base(configuration, httpClientFactory, httpBaseAddressProviderFactory, cacheManager)
         {
         }
 
@@ -27,7 +28,7 @@ namespace Masasamjant.Http.Json
         protected override IHttpClient CreateClient(string clientPurpose)
         {
             var baseAddressProvider = HttpBaseAddressProviderFactory.GetBaseAddressProvider(clientPurpose);
-            var client = new JsonHttpClient(HttpClientFactory, baseAddressProvider);
+            var client = new JsonHttpClient(HttpClientFactory, baseAddressProvider, CacheManager);
             return client;
         }
     }

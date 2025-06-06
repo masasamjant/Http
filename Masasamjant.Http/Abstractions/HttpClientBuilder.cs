@@ -13,11 +13,13 @@ namespace Masasamjant.Http.Abstractions
         /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="httpBaseAddressProviderFactory">The <see cref="IHttpBaseAddressProviderFactory"/>.</param>
-        protected HttpClientBuilder(IConfiguration configuration, IHttpClientFactory httpClientFactory, IHttpBaseAddressProviderFactory httpBaseAddressProviderFactory)
+        /// <param name="cacheManager">The <see cref="IHttpCacheManager"/>.</param>
+        protected HttpClientBuilder(IConfiguration configuration, IHttpClientFactory httpClientFactory, IHttpBaseAddressProviderFactory httpBaseAddressProviderFactory, IHttpCacheManager? cacheManager)
         {
             Configuration = configuration;
             HttpClientFactory = httpClientFactory;
             HttpBaseAddressProviderFactory = httpBaseAddressProviderFactory;
+            CacheManager = cacheManager;
         }
 
         /// <summary>
@@ -34,6 +36,11 @@ namespace Masasamjant.Http.Abstractions
         /// Gets the <see cref="IConfiguration"/>.
         /// </summary>
         protected IConfiguration Configuration { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IHttpCacheManager"/> or <c>null</c>.
+        /// </summary>
+        protected IHttpCacheManager? CacheManager { get; }
 
         /// <summary>
         /// Builds instance of <see cref="IHttpClient"/> implementation for specified purpose.

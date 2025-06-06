@@ -6,6 +6,7 @@ using Masasamjant.Http.Abstractions;
 using Masasamjant.Http.Listeners;
 using Masasamjant.Http.Demo.Interceptors;
 using HttpRequest = Masasamjant.Http.Abstractions.HttpRequest;
+using Masasamjant.Http.Caching;
 
 namespace Masasamjant.Http.Demo.Controllers
 {
@@ -86,7 +87,11 @@ namespace Masasamjant.Http.Demo.Controllers
         [HttpGet]
         public async Task<IActionResult> Car(Guid identifier)
         {
-            var request = new HttpGetRequest("api/GetCar", [HttpParameter.From("identifier", identifier.ToString())]);
+            // Since no possiblity to update or remove cars, cache single result.
+            var caching = new HttpGetRequestCaching(true, TimeSpan.FromMinutes(5));
+
+            var request = new HttpGetRequest("api/GetCar", [HttpParameter.From("identifier", identifier.ToString())], caching);
+            
             AddRequestTimeHeader(request);
             var result = await HttpClient.GetAsync<CarViewModel>(request);
             if (result == null)

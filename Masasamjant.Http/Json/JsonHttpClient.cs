@@ -2,6 +2,7 @@
 using Masasamjant.Http.Abstractions;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Masasamjant.Http.Json
 {
@@ -11,19 +12,23 @@ namespace Masasamjant.Http.Json
     public sealed class JsonHttpClient : HttpClient
     {
         private readonly System.Net.Http.HttpClient httpClient;
+        private const string ContentType = "application/json";
 
         /// <summary>
         /// Initializes new instance of the <see cref="JsonHttpClient"/> class.
         /// </summary>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="httpBaseAddressProvider">The <see cref="IHttpBaseAddressProvider"/>.</param>
-        public JsonHttpClient(IHttpClientFactory httpClientFactory, IHttpBaseAddressProvider httpBaseAddressProvider)
+        public JsonHttpClient(IHttpClientFactory httpClientFactory, IHttpBaseAddressProvider httpBaseAddressProvider, IHttpCacheManager? cacheManager)
         {
             httpClient = httpClientFactory.CreateClient();
             httpClient.BaseAddress = new Uri(httpBaseAddressProvider.GetHttpBaseAdress());
             httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(ContentType));
+            CacheManager = cacheManager ?? HttpCacheManager.Default;
         }
+
+        private IHttpCacheManager CacheManager { get; }
 
         /// <summary>
         /// Perform HTTP GET request using specified <see cref="HttpGetRequest"/>.
@@ -46,6 +51,11 @@ namespace Masasamjant.Http.Json
                     return default;
                 }
 
+                // Check if the result of previous request might be in cache.
+                var (Cached, Result) = await TryGetCacheResultAsync<T>(request);
+                if (Cached)
+                    return Result;
+
                 // Add HTTP headers defined in request.
                 AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
 
@@ -56,6 +66,10 @@ namespace Masasamjant.Http.Json
                 var response = await httpClient.GetAsync(request.FullRequestUri, request.CancellationToken);
                 response = response.EnsureSuccessStatusCode();
 
+                // Check if result can be cached.
+                if (request.Caching.CanCacheResult)
+                    await CacheResultAsync(request, response);
+                
                 var result = await response.Content.ReadFromJsonAsync<T>();
 
                 // Inform listeners about executed request.
@@ -182,6 +196,36 @@ namespace Masasamjant.Http.Json
 
                 throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP POST request.", exception);
             }
+        }
+
+        private async Task CacheResultAsync(HttpGetRequest request, HttpResponseMessage response)
+        {
+            using (var stream = new MemoryStream())
+            {
+                await response.Content.CopyToAsync(stream);
+                stream.Seek(0, SeekOrigin.Begin);
+                using (var reader = new StreamReader(stream))
+                {
+                    var json = await reader.ReadToEndAsync();
+                    await CacheManager.AddCacheContentAsync(request, json, ContentType, request.Caching.CacheDuration);
+                }
+            }
+        }
+
+        private async Task<(bool Cached, T? Result)> TryGetCacheResultAsync<T>(HttpGetRequest request)
+        {
+            if (request.Caching.CanCacheResult)
+            {
+                var cacheContent = await CacheManager.GetCacheContentAsync(request);
+                if (cacheContent != null && cacheContent.ContentValue != null)
+                {
+                    var cacheResult = JsonSerializer.Deserialize<T>(cacheContent.ContentValue);
+                    request.Caching.IsCacheResult = true;
+                    return (true, cacheResult);
+                }
+            }
+
+            return (false, default);
         }
     }
 }

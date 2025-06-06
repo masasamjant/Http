@@ -1,4 +1,5 @@
 using Masasamjant.Http.Abstractions;
+using Masasamjant.Http.Caching;
 using Masasamjant.Http.Json;
 using IHttpClientBuilder = Masasamjant.Http.Abstractions.IHttpClientBuilder;
 
@@ -15,6 +16,7 @@ namespace Masasamjant.Http.Demo
 
             builder.Services.AddHttpClient();
             builder.Services.AddSingleton<IHttpBaseAddressProviderFactory>(new HttpBaseAddressProviderFactory(builder.Configuration, "HttpClient"));
+            builder.Services.AddSingleton<IHttpCacheManager>(new MemoryHttpCacheManager());
             builder.Services.AddSingleton<IHttpClientBuilder, JsonHttpClientBuilder>();
 
             var app = builder.Build();
