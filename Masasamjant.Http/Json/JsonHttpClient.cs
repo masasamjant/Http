@@ -41,10 +41,7 @@ namespace Masasamjant.Http.Json
 
                 if (interception.CancelRequest)
                 {
-                    request.Cancel();
-
-                    if (interception.ThrowCancelException)
-                        throw GetInterceptionException(request, interception);
+                    PerformRequestInterceptionCancellation(request, interception);
 
                     return default;
                 }
@@ -107,10 +104,7 @@ namespace Masasamjant.Http.Json
 
                 if (interception.CancelRequest)
                 {
-                    request.Cancel();
-
-                    if (interception.ThrowCancelException)
-                        throw GetInterceptionException(request, interception);
+                    PerformRequestInterceptionCancellation(request, interception);
 
                     return default;
                 }
@@ -160,10 +154,7 @@ namespace Masasamjant.Http.Json
 
                 if (interception.CancelRequest)
                 {
-                    request.Cancel();
-
-                    if (interception.ThrowCancelException)
-                        throw GetInterceptionException(request, interception);
+                    PerformRequestInterceptionCancellation(request, interception);
 
                     return;
                 }

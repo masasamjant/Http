@@ -163,20 +163,23 @@ namespace Masasamjant.Http.Abstractions
         }
 
         /// <summary>
-        /// Creates <see cref="HttpRequestInterceptionException"/> based on specified <see cref="HttpRequest"/> and <see cref="HttpRequestInterception"/>.
+        /// Cancel specified <see cref="HttpRequest"/> and throw <see cref="HttpRequestInterceptionException"/> if specified <see cref="HttpRequestInterception"/> indicates that exception should be thrown.
         /// </summary>
         /// <param name="request">The intercepted HTTP request.</param>
         /// <param name="interception">The <see cref="HttpRequestInterception"/> that indicates that request should be canceled.</param>
-        /// <returns>A <see cref="HttpRequestInterceptionException"/>.</returns>
+        /// <exception cref="HttpRequestInterceptionException">If <paramref name="interception"/> indicates that exception should be thrown.</exception>
         /// <exception cref="ArgumentException">If <paramref name="interception"/> indicates that request should not be canceled.</exception>
-        protected static HttpRequestInterceptionException GetInterceptionException(HttpRequest request, HttpRequestInterception interception)
+        protected static void PerformRequestInterceptionCancellation(HttpRequest request, HttpRequestInterception interception)
         {
             if (!interception.CancelRequest)
                 throw new ArgumentException("The interception indicates that request should not be canceled.", nameof(interception));
 
-            return string.IsNullOrWhiteSpace(interception.CancelReason)
-                ? new HttpRequestInterceptionException(request)
-                : new HttpRequestInterceptionException(interception.CancelReason, request);
+            request.Cancel();
+
+            if (interception.ThrowCancelException)
+                throw string.IsNullOrWhiteSpace(interception.CancelReason)
+                    ? new HttpRequestInterceptionException(request)
+                    : new HttpRequestInterceptionException(interception.CancelReason, request);
         }
     }
 }
