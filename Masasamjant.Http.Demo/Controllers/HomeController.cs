@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Masasamjant.Http.Abstractions;
 using Masasamjant.Http.Listeners;
 using Masasamjant.Http.Demo.Interceptors;
+using HttpRequest = Masasamjant.Http.Abstractions.HttpRequest;
 
 namespace Masasamjant.Http.Demo.Controllers
 {
@@ -40,6 +41,7 @@ namespace Masasamjant.Http.Demo.Controllers
         {
             SearchVisibile(false);
             var request = new HttpGetRequest("api/GetCars");
+            AddRequestTimeHeader(request);
             var result = await HttpClient.GetAsync<IEnumerable<CarViewModel>>(request);
             return View(result ?? Enumerable.Empty<CarViewModel>());
         }
@@ -66,6 +68,7 @@ namespace Masasamjant.Http.Demo.Controllers
 
             // Create request to perform search.
             var request = new HttpGetRequest("api/SearchCars", parameters);
+            AddRequestTimeHeader(request);
 
             // Execute the request and get results.
             var result = await client.GetAsync<IEnumerable<CarViewModel>>(request);
@@ -84,6 +87,7 @@ namespace Masasamjant.Http.Demo.Controllers
         public async Task<IActionResult> Car(Guid identifier)
         {
             var request = new HttpGetRequest("api/GetCar", [HttpParameter.From("identifier", identifier.ToString())]);
+            AddRequestTimeHeader(request);
             var result = await HttpClient.GetAsync<CarViewModel>(request);
             if (result == null)
                 return RedirectToAction("List");
@@ -113,6 +117,7 @@ namespace Masasamjant.Http.Demo.Controllers
             client.HttpPostRequestInterceptors.Add(interceptor);
 
             var request = new HttpPostRequest<CarViewModel>("api/AddCar", form);
+            AddRequestTimeHeader(request);
             request.Canceled += (s, e) =>
             {
                 if (Debugger.IsAttached)
@@ -163,6 +168,12 @@ namespace Masasamjant.Http.Demo.Controllers
                 parameters.Add(HttpParameter.From("carType", form.CarType.ToString()));
 
             return parameters;
+        }
+
+        private static void AddRequestTimeHeader(HttpRequest request)
+        {
+            request.Headers.Add("X-Request-Identifier", request.Identifier.ToString());
+            request.Headers.Add("X-Request-Time", DateTime.Now.ToString());
         }
     }
 }

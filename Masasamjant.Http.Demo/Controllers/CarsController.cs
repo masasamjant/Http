@@ -1,6 +1,7 @@
 ﻿using Masasamjant.Http.Demo.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace Masasamjant.Http.Demo.Controllers
 {
@@ -13,6 +14,8 @@ namespace Masasamjant.Http.Demo.Controllers
         [Route("api/GetCars")]
         public IActionResult GetCars()
         {
+            WriteRequestTimeHeader();
+
             return Ok(carList);
         }
 
@@ -20,6 +23,8 @@ namespace Masasamjant.Http.Demo.Controllers
         [Route("api/SearchCars")]
         public IActionResult SearchCars(string? manufacturer = null, string? model = null, string? registerNumber = null, int modelYear = 0, int productionYear = 0, int seats = 0, EngineType engine = EngineType.Petrol, CarType carType = CarType.Unspecified)
         {
+            WriteRequestTimeHeader();
+
             var cars = carList.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(manufacturer))
@@ -52,6 +57,7 @@ namespace Masasamjant.Http.Demo.Controllers
         [Route("api/GetCar")]
         public IActionResult GetCar([FromQuery] Guid identifier)
         {
+            WriteRequestTimeHeader();
             var car = carList.FirstOrDefault(c => c.Identifier == identifier);
             if (car == null)
                 return NotFound();
@@ -62,10 +68,21 @@ namespace Masasamjant.Http.Demo.Controllers
         [Route("api/AddCar")]
         public IActionResult AddCar([FromBody] CarViewModel model)
         {
+            WriteRequestTimeHeader();
             if (model == null)
                 return BadRequest("Car model cannot be null.");
             carList.Add(model);
             return Ok(model);
+        }
+
+        private void WriteRequestTimeHeader()
+        {
+            if (HttpContext.Request.Headers.TryGetValue("X-Request-Time", out var requestTime) && requestTime.Count > 0 &&
+                HttpContext.Request.Headers.TryGetValue("X-Request-Identifier", out var requestIdentifier) && requestIdentifier.Count > 0)
+            {
+               if (Debugger.IsAttached)
+                    Debug.WriteLine($"Request '{requestIdentifier[0]}' at '{requestTime[0]}'.");
+            }
         }
     }
 }
