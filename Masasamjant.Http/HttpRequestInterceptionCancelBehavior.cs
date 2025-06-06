@@ -11,7 +11,7 @@
         Return = 0,
 
         /// <summary>
-        /// Throws <see cref="HttpRequestInterceptionException"/> after canceling request because of interception.
+        /// Throws exception after canceling request because of interception.
         /// </summary>
         Throw = 1
     }

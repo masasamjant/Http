@@ -64,7 +64,7 @@ namespace Masasamjant.Http.Demo.Controllers
             SearchVisibile(true);
 
             // Convert model to HTTP parameters.
-            var parameters = GetSearchParameters(form);
+            var parameters = HttpParameterCollection.Create(form);
 
             // Create request to perform search.
             var request = new HttpGetRequest("api/SearchCars", parameters);
@@ -138,36 +138,6 @@ namespace Masasamjant.Http.Demo.Controllers
         private void SearchVisibile(bool visible)
         {
             ViewData["SearchVisible"] = visible;
-        }
-
-        private static List<HttpParameter> GetSearchParameters(CarSeachViewModel form)
-        {
-            var parameters = new List<HttpParameter>();
-
-            if (!string.IsNullOrWhiteSpace(form.Manufacturer))
-                parameters.Add(HttpParameter.From("manufacturer", form.Manufacturer));
-
-            if (!string.IsNullOrWhiteSpace(form.Model))
-                parameters.Add(HttpParameter.From("model", form.Model));
-
-            if (!string.IsNullOrWhiteSpace(form.RegisterNumber))
-                parameters.Add(HttpParameter.From("registerNumber", form.RegisterNumber));
-
-            if (form.ModelYear > 0)
-                parameters.Add(HttpParameter.From("modelYear", form.ModelYear.ToString()));
-
-            if (form.ProductionYear > 0)
-                parameters.Add(HttpParameter.From("productionYear", form.ProductionYear.ToString()));
-
-            if (form.Seats > 0)
-                parameters.Add(HttpParameter.From("seats", form.Seats.ToString()));
-
-            parameters.Add(HttpParameter.From("engine", form.Engine.ToString()));
-
-            if (form.CarType != CarType.Unspecified)
-                parameters.Add(HttpParameter.From("carType", form.CarType.ToString()));
-
-            return parameters;
         }
 
         private static void AddRequestTimeHeader(HttpRequest request)
