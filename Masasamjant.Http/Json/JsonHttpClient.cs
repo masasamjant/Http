@@ -19,13 +19,14 @@ namespace Masasamjant.Http.Json
         /// </summary>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="httpBaseAddressProvider">The <see cref="IHttpBaseAddressProvider"/>.</param>
-        public JsonHttpClient(IHttpClientFactory httpClientFactory, IHttpBaseAddressProvider httpBaseAddressProvider, IHttpCacheManager? cacheManager)
+        /// <param name="httpCacheManager">The <see cref="IHttpCacheManager"/>.</param>
+        public JsonHttpClient(IHttpClientFactory httpClientFactory, IHttpBaseAddressProvider httpBaseAddressProvider, IHttpCacheManager httpCacheManager)
         {
             httpClient = httpClientFactory.CreateClient();
             httpClient.BaseAddress = new Uri(httpBaseAddressProvider.GetHttpBaseAdress());
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(ContentType));
-            CacheManager = cacheManager ?? HttpCacheManager.Default;
+            CacheManager = httpCacheManager;
         }
 
         private IHttpCacheManager CacheManager { get; }
