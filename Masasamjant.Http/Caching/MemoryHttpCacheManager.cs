@@ -80,7 +80,11 @@ namespace Masasamjant.Http.Caching
                             bool expired = expires < DateTimeOffset.UtcNow;
 
                             if (expired)
+                            {
+                                keys.Remove(contentKey);
                                 contents.Remove(contentKey);
+                                content = null;
+                            }
                         }
                     }
                 }

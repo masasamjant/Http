@@ -24,9 +24,15 @@ namespace Masasamjant.Http.Demo.Controllers
             get
             {
                 var client = httpClientBuilder.Build("Demo");
+                
+                // Add interceptor that writes request URI in debug.
                 var interceptor = new DebugRequestUriInterceptor();
                 client.HttpGetRequestInterceptors.Add(interceptor);
                 client.HttpPostRequestInterceptors.Add(interceptor);
+
+                // Add interceptor that adds request identifier to HTTP header.
+                client.AddRequestIdentifierHeaderInterceptor("X-Request-Identifier");
+                
                 return client;
             }
         }
@@ -147,7 +153,6 @@ namespace Masasamjant.Http.Demo.Controllers
 
         private static void AddRequestTimeHeader(HttpRequest request)
         {
-            request.Headers.Add("X-Request-Identifier", request.Identifier.ToString());
             request.Headers.Add("X-Request-Time", DateTime.Now.ToString());
         }
     }
