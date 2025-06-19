@@ -19,7 +19,7 @@
         /// <summary>
         /// Gets the key information of executed HTTP request.
         /// </summary>
-        HttpRequestKey HttpRequest { get; }
+        public HttpRequestKey HttpRequest { get; }
 
         /// <summary>
         /// Gets the execution time of HTTP request.

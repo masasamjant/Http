@@ -78,6 +78,16 @@ namespace Masasamjant.Http
         }
 
         /// <summary>
+        /// Gets the <see cref="HttpHeader"/> with specified name.
+        /// </summary>
+        /// <param name="name">The header name.</param>
+        /// <returns>A <see cref="HttpHeader"/> or <c>null</c>, if not exist.</returns>
+        public HttpHeader? Get(string name)
+        {
+            return headers.FirstOrDefault(x => x.Name == name);
+        }
+
+        /// <summary>
         /// Removes specified <see cref="HttpHeader"/> from collection.
         /// </summary>
         /// <param name="header">The <see cref="HttpHeader"/> to remove.</param>

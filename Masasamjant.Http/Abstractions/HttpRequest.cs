@@ -12,7 +12,7 @@
         /// <param name="requestMethod">The <see cref="HttpRequestMethod"/>.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="requestUri"/> is empty or contains only whitespace characters.</exception>
         /// <exception cref="ArgumentException">If value of <paramref name="requestMethod"/> is not defined.</exception>
-        internal HttpRequest(string requestUri, HttpRequestMethod requestMethod)
+        protected HttpRequest(string requestUri, HttpRequestMethod requestMethod)
         {
             if (string.IsNullOrWhiteSpace(requestUri))
                 throw new ArgumentNullException(nameof(requestUri), "The request URI cannot be empty or contain only whitespace characters.");

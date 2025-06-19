@@ -1,6 +1,4 @@
-﻿using Masasamjant.Http.Caching;
-
-namespace Masasamjant.Http.Abstractions
+﻿namespace Masasamjant.Http.Abstractions
 {
     [TestClass]
     public class HttpCacheManagerUnitTest : UnitTest
@@ -34,21 +32,6 @@ namespace Masasamjant.Http.Abstractions
             await manager.AddCacheContentAsync(request, "content", "string", TimeSpan.FromSeconds(10));
             var content = await manager.GetCacheContentAsync(request);
             Assert.IsNull(content);
-        }
-
-        private class TestHttpCacheManager : HttpCacheManager
-        {
-            public override Task AddCacheContentAsync(HttpGetRequest request, string? contentValue, string? contentType, TimeSpan duration)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override Task<HttpCacheContent?> GetCacheContentAsync(HttpGetRequest request)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string TestGetContentKey(HttpGetRequest request) => GetContentKey(request);
         }
     }
 }

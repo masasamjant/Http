@@ -8,7 +8,7 @@ namespace Masasamjant.Http
     /// </summary>
     public class HttpBaseAddressProviderFactory : IHttpBaseAddressProviderFactory
     {
-        private readonly IConfigurationSection rootSection;
+        private readonly IConfiguration configuration;
 
         /// <summary>
         /// Initializes new instance of the <see cref="HttpBaseAddressProviderFactory"/> class.
@@ -24,12 +24,21 @@ namespace Masasamjant.Http
 
             try
             {
-                rootSection = configuration.GetRequiredSection(rootSectionKey);
+                this.configuration = configuration.GetRequiredSection(rootSectionKey);
             }
             catch (InvalidOperationException exception)
             {
                 throw new ArgumentException("The configuration section does not exist.", nameof(rootSectionKey), exception);
             }
+        }
+
+        /// <summary>
+        /// Initializes new instance of the <see cref="HttpBaseAddressProviderFactory"/> class.
+        /// </summary>
+        /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
+        public HttpBaseAddressProviderFactory(IConfiguration configuration)
+        {
+            this.configuration = configuration;
         }
 
         /// <summary>
@@ -52,7 +61,7 @@ namespace Masasamjant.Http
 
             try
             {
-                return new HttpBaseAddressProvider(rootSection, ConfigurationKey, baseAddressPurpose);
+                return new HttpBaseAddressProvider(configuration, ConfigurationKey, baseAddressPurpose);
             }
             catch (Exception exception)
             {

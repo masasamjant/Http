@@ -1,5 +1,4 @@
 ﻿using Masasamjant.Http.Interceptors;
-using System.Net.Http.Headers;
 using System.Text;
 
 namespace Masasamjant.Http.Abstractions
@@ -114,99 +113,6 @@ namespace Masasamjant.Http.Abstractions
             request.Canceled += (s, e) => { canceled = true; };
             TestHttpClient.TestPerformRequestInterceptionCancellation(request, HttpRequestInterception.Cancel(HttpRequestInterceptionCancelBehavior.Return, "Testing"));
             Assert.IsTrue(canceled);
-        }
-
-        private class TestHttpClient : HttpClient
-        {
-            public override Task<T?> GetAsync<T>(HttpGetRequest request) where T : default
-            {
-                throw new NotImplementedException();
-            }
-
-            public override Task<T?> PostAsync<T>(HttpPostRequest<T> request) where T : default
-            {
-                throw new NotImplementedException();
-            }
-
-            public override Task<TResult?> PostAsync<TResult, T>(HttpPostRequest<T> request) where TResult : default
-            {
-                throw new NotImplementedException();
-            }
-
-            public override Task PostAsync(HttpPostRequest request)
-            {
-                throw new NotImplementedException();
-            }
-
-            public async Task<HttpRequestInterception> TestExecuteInterceptorsAsync(HttpGetRequest request) => await ExecuteInterceptorsAsync(request);
-
-            public async Task<HttpRequestInterception> TestExecuteInterceptorsAsync(HttpPostRequest request) => await ExecuteInterceptorsAsync(request);
-
-            public async Task TestOnExecutingHttpClientListenersAsync(HttpRequest request) => await OnExecutingHttpClientListenersAsync(request);
-
-            public async Task TestOnExecutedHttpClientListenersAsync(HttpRequest request) => await OnExecutedHttpClientListenersAsync(request);
-
-            public async Task TestOnErrorHttpClientListenersAsync(HttpRequest request, Exception exception) => await OnErrorHttpClientListenersAsync(request, exception);
-
-            public static void TestAddHttpHeaders(HttpRequest request, HttpHeaders headers) => AddHttpHeaders(request, headers);
-
-            public static void TestPerformRequestInterceptionCancellation(HttpRequest request, HttpRequestInterception interception) => PerformRequestInterceptionCancellation(request, interception);
-        }
-
-        private class TestHttpRequestInterceptor : HttpRequestInterceptor
-        {
-            private readonly HttpRequestInterception interception;
-            private readonly List<string> lines;
-
-            public TestHttpRequestInterceptor(HttpRequestInterception interception, List<string> lines)
-            { 
-                this.interception = interception;
-                this.lines = lines;
-            }
-
-            public override Task<HttpRequestInterception> InterceptAsync(HttpGetRequest request)
-            {
-                lines.Add($"GET: {request.Identifier}");
-                return Task.FromResult(interception);
-            }
-
-            public override Task<HttpRequestInterception> InterceptAsync(HttpPostRequest request)
-            {
-                lines.Add($"POST: {request.Identifier}");
-                return Task.FromResult(interception);
-            }
-        }
-
-        private class TestHttpClientListener : HttpClientListener
-        {
-            private readonly StringBuilder builder;
-
-            public TestHttpClientListener(StringBuilder builder)
-            {
-                this.builder = builder;
-            }
-
-            public override Task OnErrorAsync(HttpRequest request, Exception exception)
-            {
-                builder.Append($"Error: {exception.Message}");
-                return Task.CompletedTask;
-            }
-
-            public override Task OnExecutedAsync(HttpRequest request)
-            {
-                builder.Append($"Executed: {request.Identifier}");
-                return Task.CompletedTask;
-            }
-
-            public override Task OnExecutingAsync(HttpRequest request)
-            {
-                builder.Append($"Executing: {request.Identifier}");
-                return Task.CompletedTask;
-            }
-        }
-
-        private class TestHttpHeaders : HttpHeaders
-        { 
         }
     }
 }

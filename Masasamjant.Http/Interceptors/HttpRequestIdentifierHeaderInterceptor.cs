@@ -7,8 +7,6 @@ namespace Masasamjant.Http.Interceptors
     /// </summary>
     public sealed class HttpRequestIdentifierHeaderInterceptor : HttpRequestInterceptor
     {
-        private readonly string requestIdentifierHeaderName;
-
         /// <summary>
         /// Initializes new instance of the <see cref="HttpRequestIdentifierHeaderInterceptor"/> class.
         /// </summary>
@@ -19,8 +17,13 @@ namespace Masasamjant.Http.Interceptors
             if (string.IsNullOrWhiteSpace(requestIdentifierHeaderName))
                 throw new ArgumentNullException(nameof(requestIdentifierHeaderName), "The request identifier HTTP header name is empty or only whitespace.");
 
-            this.requestIdentifierHeaderName = requestIdentifierHeaderName;
+            RequestIdentifierHeaderName = requestIdentifierHeaderName;
         }
+
+        /// <summary>
+        /// Gets the name of request identifier HTTP header.
+        /// </summary>
+        public string RequestIdentifierHeaderName { get; }
 
         /// <summary>
         /// Intercepts specified <see cref="HttpGetRequest"/> before it it send. This gives interceptor
@@ -48,7 +51,7 @@ namespace Masasamjant.Http.Interceptors
 
         private void AddRequestIdentifierHeader(HttpRequest request)
         {
-            request.Headers.Add(requestIdentifierHeaderName, request.Identifier.ToString());
+            request.Headers.Add(RequestIdentifierHeaderName, request.Identifier.ToString());
         }
     }
 }
