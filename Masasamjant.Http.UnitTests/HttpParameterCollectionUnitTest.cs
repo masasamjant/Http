@@ -76,6 +76,17 @@
             Assert.IsTrue(ageParameter != null && ageParameter.Value!.Equals(10));
         }
 
+        [TestMethod]
+        public void Test_Get()
+        {
+            var parameters = new HttpParameterCollection();
+            var parameter = parameters.Get("name");
+            Assert.IsNull(parameter);
+            parameters.Add("name", "test");
+            parameter = parameters.Get("name");
+            Assert.IsNotNull(parameter);
+        }
+
         private class Pet
         {
             [HttpParameter("name")]

@@ -99,6 +99,16 @@ namespace Masasamjant.Http
         }
 
         /// <summary>
+        /// Gets the <see cref="HttpParameter"/> with specified name.
+        /// </summary>
+        /// <param name="name">The parameter name.</param>
+        /// <returns>A <see cref="HttpParameter"/> or <c>null</c>, if not exist.</returns>
+        public HttpParameter? Get(string name)
+        {
+            return parameters.FirstOrDefault(x => x.Name == name);
+        }
+
+        /// <summary>
         /// Gets enumerator to iterate all parameters in collection.
         /// </summary>
         /// <returns>A enumerator to iterate parameters.</returns>

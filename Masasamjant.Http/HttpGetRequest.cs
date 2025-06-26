@@ -80,7 +80,8 @@ namespace Masasamjant.Http
             var parameters = new HttpParameterCollection();
             foreach (var parameter in Parameters)
                 parameters.Add(parameter.Clone());
-            var request = new HttpGetRequest(RequestUri, parameters, Caching);
+            var caching = new HttpGetRequestCaching(Caching.CanCacheResult, Caching.CacheDuration);
+            var request = new HttpGetRequest(RequestUri, parameters, caching);
             CloneHeadersTo(request);
             return request;
         }
