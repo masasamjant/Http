@@ -1,7 +1,7 @@
 {
-  "Root": {
-    "HttpBaseAddress": {
-      "Purpose":  "http://localhost/"
+  "HttpClient": {
+    "ClientPurpose": {
+      "HttpBaseAddress": "http://localhost/"
     }
   }
 }
