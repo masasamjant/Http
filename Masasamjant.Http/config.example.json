@@ -1,0 +1,7 @@
+{
+  "Root": {
+    "HttpBaseAddress": {
+      "Purpose":  "http://localhost/"
+    }
+  }
+}

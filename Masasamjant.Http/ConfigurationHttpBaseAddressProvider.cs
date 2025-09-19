@@ -7,31 +7,31 @@ namespace Masasamjant.Http
     /// <summary>
     /// Represents provider of HTTP base address that reads HTTP base address from configuration.
     /// </summary>
-    public class HttpBaseAddressProvider : IHttpBaseAddressProvider
+    public class ConfigurationHttpBaseAddressProvider : IHttpBaseAddressProvider
     {
         private readonly IConfiguration configuration;
         private readonly string configurationKey;
         private readonly IEnumerable<string> sectionKeys;
 
         /// <summary>
-        /// Initializes new instance of the <see cref="HttpBaseAddressProvider"/> class. This constructor 
+        /// Initializes new instance of the <see cref="ConfigurationHttpBaseAddressProvider"/> class. This constructor 
         /// should be used when configuration value is read from <see cref="IConfiguration"/> and not some sub-section.
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
         /// <param name="configurationKey">The configuration key.</param>
-        public HttpBaseAddressProvider(IConfiguration configuration, string configurationKey)
+        public ConfigurationHttpBaseAddressProvider(IConfiguration configuration, string configurationKey)
             : this(configuration, configurationKey, [])
         { }
 
         /// <summary>
-        /// Initializes new instance of the <see cref="HttpBaseAddressProvider"/> class. This constructor 
+        /// Initializes new instance of the <see cref="ConfigurationHttpBaseAddressProvider"/> class. This constructor 
         /// should be used when configuration value is read from configuration section of <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
         /// <param name="configurationKey">The configuration key.</param>
         /// <param name="sectionKey">The configuration section key.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="configurationKey"/> or <paramref name="sectionKey"/> is empty or contains only whitespace characters.</exception>
-        public HttpBaseAddressProvider(IConfiguration configuration, string configurationKey, string sectionKey)
+        public ConfigurationHttpBaseAddressProvider(IConfiguration configuration, string configurationKey, string sectionKey)
             : this(configuration, configurationKey, [sectionKey])
         {
             if (string.IsNullOrWhiteSpace(sectionKey))
@@ -39,14 +39,14 @@ namespace Masasamjant.Http
         }
 
         /// <summary>
-        /// Initializes new instance of the <see cref="HttpBaseAddressProvider"/> class. This constuctor 
+        /// Initializes new instance of the <see cref="ConfigurationHttpBaseAddressProvider"/> class. This constuctor 
         /// should be used when configuration value is read from deeper configuration section of <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
         /// <param name="configurationKey">The configuration key.</param>
         /// <param name="sectionKeys">The configuration section keys or empty.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="configurationKey"/> is empty or contains only whitespace characters.</exception>
-        public HttpBaseAddressProvider(IConfiguration configuration, string configurationKey, IEnumerable<string> sectionKeys)
+        public ConfigurationHttpBaseAddressProvider(IConfiguration configuration, string configurationKey, IEnumerable<string> sectionKeys)
         {
             if (string.IsNullOrWhiteSpace(configurationKey))
                 throw new ArgumentNullException(nameof(configurationKey), "The configuration key is empty or contains only whitespace characters.");

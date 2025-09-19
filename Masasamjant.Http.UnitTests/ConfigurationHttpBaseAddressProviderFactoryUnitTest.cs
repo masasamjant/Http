@@ -1,7 +1,7 @@
 ﻿namespace Masasamjant.Http
 {
     [TestClass]
-    public class HttpBaseAddressProviderFactoryUnitTest : UnitTest
+    public class ConfigurationHttpBaseAddressProviderFactoryUnitTest : UnitTest
     {
         [TestMethod]
         public void Test_Constructor()
@@ -10,12 +10,12 @@
             {
                 { "Section:Key", "Value" },
             });
-            var factory = new HttpBaseAddressProviderFactory(configuration);
+            var factory = new ConfigurationHttpBaseAddressProviderFactory(configuration);
             Assert.IsNotNull(factory);
-            Assert.ThrowsException<ArgumentNullException>(() => new HttpBaseAddressProviderFactory(configuration, string.Empty));
-            Assert.ThrowsException<ArgumentNullException>(() => new HttpBaseAddressProviderFactory(configuration, "  "));
-            Assert.ThrowsException<ArgumentException>(() => new HttpBaseAddressProviderFactory(configuration, "Test"));
-            factory = new HttpBaseAddressProviderFactory(configuration, "Section");
+            Assert.ThrowsException<ArgumentNullException>(() => new ConfigurationHttpBaseAddressProviderFactory(configuration, string.Empty));
+            Assert.ThrowsException<ArgumentNullException>(() => new ConfigurationHttpBaseAddressProviderFactory(configuration, "  "));
+            Assert.ThrowsException<ArgumentException>(() => new ConfigurationHttpBaseAddressProviderFactory(configuration, "Test"));
+            factory = new ConfigurationHttpBaseAddressProviderFactory(configuration, "Section");
             Assert.IsNotNull(factory);
         }
 
@@ -26,7 +26,7 @@
             {
                 { "Section:Key", "Value" },
             });
-            var factory = new HttpBaseAddressProviderFactory(configuration);
+            var factory = new ConfigurationHttpBaseAddressProviderFactory(configuration);
             Assert.AreEqual("HttpBaseAddress", factory.ConfigurationKey);
             factory.ConfigurationKey = "Key";
             Assert.AreEqual("Key", factory.ConfigurationKey);
@@ -39,7 +39,7 @@
             {
                 { "Section:Key", "Value" },
             });
-            var factory = new HttpBaseAddressProviderFactory(configuration);
+            var factory = new ConfigurationHttpBaseAddressProviderFactory(configuration);
             factory.ConfigurationKey = "Key";
             Assert.ThrowsException<ArgumentNullException>(() => factory.GetBaseAddressProvider(string.Empty));
             Assert.ThrowsException<ArgumentNullException>(() => factory.GetBaseAddressProvider("    "));

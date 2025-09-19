@@ -15,7 +15,7 @@ namespace Masasamjant.Http.Demo
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddHttpClient();
-            builder.Services.AddSingleton<IHttpBaseAddressProviderFactory>(new HttpBaseAddressProviderFactory(builder.Configuration, "HttpClient"));
+            builder.Services.AddSingleton<IHttpBaseAddressProviderFactory>(new ConfigurationHttpBaseAddressProviderFactory(builder.Configuration, "HttpClient"));
             builder.Services.AddSingleton<IHttpCacheManager>(new MemoryHttpCacheManager());
             builder.Services.AddSingleton<IHttpClientBuilder, JsonHttpClientBuilder>();
 

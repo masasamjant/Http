@@ -1,7 +1,7 @@
 ﻿namespace Masasamjant.Http
 {
     [TestClass]
-    public class HttpBaseAddressProviderUnitTest : UnitTest
+    public class ConfigurationHttpBaseAddressProviderUnitTest : UnitTest
     {
         [TestMethod]
         public void Test_Constructor()
@@ -11,11 +11,11 @@
                 { "Section:Key", "Value" },
             });
 
-            Assert.ThrowsException<ArgumentNullException>(() => new HttpBaseAddressProvider(configuration, string.Empty, ["Section"]));
-            Assert.ThrowsException<ArgumentNullException>(() => new HttpBaseAddressProvider(configuration, "  ", ["Section"]));
-            Assert.ThrowsException<ArgumentNullException>(() => new HttpBaseAddressProvider(configuration, "Key", string.Empty));
-            Assert.ThrowsException<ArgumentNullException>(() => new HttpBaseAddressProvider(configuration, "Key", "  "));
-            var provider = new HttpBaseAddressProvider(configuration, "Key", ["Section"]);
+            Assert.ThrowsException<ArgumentNullException>(() => new ConfigurationHttpBaseAddressProvider(configuration, string.Empty, ["Section"]));
+            Assert.ThrowsException<ArgumentNullException>(() => new ConfigurationHttpBaseAddressProvider(configuration, "  ", ["Section"]));
+            Assert.ThrowsException<ArgumentNullException>(() => new ConfigurationHttpBaseAddressProvider(configuration, "Key", string.Empty));
+            Assert.ThrowsException<ArgumentNullException>(() => new ConfigurationHttpBaseAddressProvider(configuration, "Key", "  "));
+            var provider = new ConfigurationHttpBaseAddressProvider(configuration, "Key", ["Section"]);
             Assert.IsNotNull(provider);
         }
 
@@ -27,7 +27,7 @@
                 { "Section:Key", "" },
             });
             Assert.ThrowsException<InvalidOperationException>(() => {
-                var provider = new HttpBaseAddressProvider(configuration, "Key", ["Section"]);
+                var provider = new ConfigurationHttpBaseAddressProvider(configuration, "Key", ["Section"]);
                 provider.GetHttpBaseAdress();
             });
 
@@ -35,7 +35,7 @@
             {
                 { "Section:Key", "Value" },
             });
-            var provider = new HttpBaseAddressProvider(configuration, "Key", ["Section"]);
+            var provider = new ConfigurationHttpBaseAddressProvider(configuration, "Key", ["Section"]);
             string expected = "Value";
             string actual = provider.GetHttpBaseAdress();
             Assert.AreEqual(expected, actual);

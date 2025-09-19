@@ -4,20 +4,20 @@ using Microsoft.Extensions.Configuration;
 namespace Masasamjant.Http
 {
     /// <summary>
-    /// Represents <see cref="IHttpBaseAddressProviderFactory"/> that use configuration to create <see cref="HttpBaseAddressProvider"/> instances.
+    /// Represents <see cref="IHttpBaseAddressProviderFactory"/> that use configuration to create <see cref="ConfigurationHttpBaseAddressProvider"/> instances.
     /// </summary>
-    public class HttpBaseAddressProviderFactory : IHttpBaseAddressProviderFactory
+    public class ConfigurationHttpBaseAddressProviderFactory : IHttpBaseAddressProviderFactory
     {
         private readonly IConfiguration configuration;
 
         /// <summary>
-        /// Initializes new instance of the <see cref="HttpBaseAddressProviderFactory"/> class.
+        /// Initializes new instance of the <see cref="ConfigurationHttpBaseAddressProviderFactory"/> class.
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
         /// <param name="rootSectionKey">The root configuration section key.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="rootSectionKey"/> is empty or contains only whitespace characters.</exception>
         /// <exception cref="ArgumentException">If configuration section specified by <paramref name="rootSectionKey"/> does not exist.</exception>
-        public HttpBaseAddressProviderFactory(IConfiguration configuration, string rootSectionKey)
+        public ConfigurationHttpBaseAddressProviderFactory(IConfiguration configuration, string rootSectionKey)
         {
             if (string.IsNullOrWhiteSpace(rootSectionKey))
                 throw new ArgumentNullException(nameof(rootSectionKey), "The root section key is empty or contains only whitespace characters.");
@@ -33,10 +33,10 @@ namespace Masasamjant.Http
         }
 
         /// <summary>
-        /// Initializes new instance of the <see cref="HttpBaseAddressProviderFactory"/> class.
+        /// Initializes new instance of the <see cref="ConfigurationHttpBaseAddressProviderFactory"/> class.
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/>.</param>
-        public HttpBaseAddressProviderFactory(IConfiguration configuration)
+        public ConfigurationHttpBaseAddressProviderFactory(IConfiguration configuration)
         {
             this.configuration = configuration;
         }
@@ -48,7 +48,7 @@ namespace Masasamjant.Http
         public string ConfigurationKey { get; set; } = "HttpBaseAddress";
 
         /// <summary>
-        /// Creates instance of <see cref="HttpBaseAddressProvider"/> for specified base address purpose.
+        /// Creates instance of <see cref="ConfigurationHttpBaseAddressProvider"/> for specified base address purpose.
         /// </summary>
         /// <param name="baseAddressPurpose">The purpose of the HTTP base address and name of configuration section of the HTTP base address.</param>
         /// <returns>A <see cref="IHttpBaseAddressProvider"/>.</returns>
@@ -61,11 +61,11 @@ namespace Masasamjant.Http
 
             try
             {
-                return new HttpBaseAddressProvider(configuration, ConfigurationKey, baseAddressPurpose);
+                return new ConfigurationHttpBaseAddressProvider(configuration, ConfigurationKey, baseAddressPurpose);
             }
             catch (Exception exception)
             {
-                throw new InvalidOperationException($"Could not create instance of '{typeof(HttpBaseAddressProvider)}'.", exception);
+                throw new InvalidOperationException($"Could not create instance of '{typeof(ConfigurationHttpBaseAddressProvider)}'.", exception);
             }
         }
     }
