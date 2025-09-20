@@ -14,10 +14,10 @@ namespace Masasamjant.Http.Demo
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddHttpClient();
-            builder.Services.AddSingleton<IHttpBaseAddressProviderFactory>(new ConfigurationHttpBaseAddressProviderFactory(builder.Configuration, "HttpClient"));
-            builder.Services.AddSingleton<IHttpCacheManager>(new MemoryHttpCacheManager());
-            builder.Services.AddSingleton<IHttpClientBuilder, JsonHttpClientBuilder>();
+            // Register JSON Http builder and dependencies.
+            builder.Services.AddJsonHttpClientBuilder(new HttpClientConfiguration(),
+                new ConfigurationHttpBaseAddressProviderFactory(builder.Configuration, "HttpClient"),
+                new MemoryHttpCacheManager());
 
             var app = builder.Build();
 
