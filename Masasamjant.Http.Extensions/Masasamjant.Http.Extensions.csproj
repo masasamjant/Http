@@ -17,7 +17,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <IncludeSymbols>True</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>    
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Authors>Matti Jantti</Authors>
   </PropertyGroup>
   
   <ItemGroup>
