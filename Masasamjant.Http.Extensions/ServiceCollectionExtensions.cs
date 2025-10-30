@@ -1,5 +1,6 @@
 ﻿using Masasamjant.Http.Abstractions;
 using Masasamjant.Http.Json;
+using Masasamjant.Http.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using IHttpClientBuilder = Masasamjant.Http.Abstractions.IHttpClientBuilder;
 
@@ -59,6 +60,28 @@ namespace Masasamjant.Http
                 services.AddHttpCacheManager(httpCacheManager);
 
             return services.AddSingleton<IHttpClientBuilder, JsonHttpClientBuilder>();
+        }
+
+        /// <summary>
+        /// Add singleton <see cref="XmlHttpClientBuilder"/> as <see cref="IHttpClientBuilder"/> to specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="httpClientConfiguration">The <see cref="HttpClientConfiguration"/> if <see cref="HttpClient"/> is registered also; <c>null</c> otherwise.</param>
+        /// <param name="httpBaseAddressProviderFactory">The singleton <see cref="IHttpBaseAddressProviderFactory"/> to register also; <c>null</c> otherwise.</param>
+        /// <param name="httpCacheManager">The singleton <see cref="IHttpCacheManager"/> to register also; <c>null</c> otherwise.</param>
+        /// <returns>A <paramref name="services"/>.</returns>
+        public static IServiceCollection AddXmlHttpClientBuilder(this IServiceCollection services, HttpClientConfiguration? httpClientConfiguration = null, IHttpBaseAddressProviderFactory? httpBaseAddressProviderFactory = null, IHttpCacheManager? httpCacheManager = null)
+        {
+            if (httpClientConfiguration != null)
+                httpClientConfiguration.AddHttpClient(services);
+
+            if (httpBaseAddressProviderFactory != null)
+                services.AddHttpBaseAddressProviderFactory(httpBaseAddressProviderFactory);
+
+            if (httpCacheManager != null)
+                services.AddHttpCacheManager(httpCacheManager);
+
+            return services.AddSingleton<IHttpClientBuilder, XmlHttpClientBuilder>();
         }
 
         /// <summary>

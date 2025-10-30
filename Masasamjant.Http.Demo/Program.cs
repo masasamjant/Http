@@ -9,12 +9,25 @@ namespace Masasamjant.Http.Demo
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews().AddXmlDataContractSerializerFormatters();
 
-            // Register JSON Http builder and dependencies.
-            builder.Services.AddJsonHttpClientBuilder(new HttpClientConfiguration(),
-                new ConfigurationHttpBaseAddressProviderFactory(builder.Configuration, "HttpClient"),
-                new MemoryHttpCacheManager());
+            var section = builder.Configuration.GetRequiredSection("HttpClient");
+            var clientType = section["Type"];
+
+            if (string.Equals(clientType, "json", StringComparison.OrdinalIgnoreCase))
+            {
+                // Register JSON Http builder and dependencies.
+                builder.Services.AddJsonHttpClientBuilder(new HttpClientConfiguration(),
+                    new ConfigurationHttpBaseAddressProviderFactory(builder.Configuration, "HttpClient"),
+                    new MemoryHttpCacheManager());
+            }
+            else
+            {
+                // Register XML Http builder and dependencies.
+                builder.Services.AddXmlHttpClientBuilder(new HttpClientConfiguration(),
+                    new ConfigurationHttpBaseAddressProviderFactory(builder.Configuration, "HttpClient"),
+                    new MemoryHttpCacheManager());
+            }
 
             var app = builder.Build();
 

@@ -1,7 +1,8 @@
 ﻿using Masasamjant.Http.Demo.Models;
-using Microsoft.AspNetCore.Http;
+using Masasamjant.Xml;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Masasamjant.Http.Demo.Controllers
 {
@@ -62,13 +63,24 @@ namespace Masasamjant.Http.Demo.Controllers
             });
         }
 
+        private readonly string contentType;
+
+        public CarsController(IConfiguration configuration)
+        {
+            var section = configuration.GetRequiredSection("HttpClient");
+            var clientType = section["Type"];
+            contentType = string.Equals(clientType, "json", StringComparison.OrdinalIgnoreCase) ? "application/json" : "application/xml";
+        }
+
         [HttpGet]
         [Route("api/GetCars")]
         public IActionResult GetCars()
         {
             WriteRequestTimeHeader();
 
-            return Ok(carList);
+            var content = Serialize(carList);
+
+            return OkResult(content);
         }
 
         [HttpGet]
@@ -102,7 +114,9 @@ namespace Masasamjant.Http.Demo.Controllers
             if (carType != CarType.Unspecified)
                 cars = cars.Where(c => c.CarType == carType);
 
-            return Ok(cars.ToList());
+            var content = Serialize(cars.ToList());
+
+            return OkResult(content);
         }
 
         [HttpGet]
@@ -113,7 +127,10 @@ namespace Masasamjant.Http.Demo.Controllers
             var car = carList.FirstOrDefault(c => c.Identifier == identifier);
             if (car == null)
                 return NotFound();
-            return Ok(car);
+
+            var content = Serialize(car);
+
+            return OkResult(content);
         }
 
         [HttpPost]
@@ -121,11 +138,54 @@ namespace Masasamjant.Http.Demo.Controllers
         public IActionResult AddCar([FromBody] CarViewModel model)
         {
             WriteRequestTimeHeader();
+            
             if (model == null)
                 return BadRequest("Car model cannot be null.");
+            
             carList.Add(model);
-            return Ok(model);
+            
+            var content = Serialize(model);
+
+            return OkResult(content);
         }
+
+        private ContentResult OkResult(string content)
+            => new ContentResult() 
+            {
+                ContentType = contentType,
+                Content = content,
+                StatusCode = 200
+            };
+
+        private string Serialize(CarViewModel model)
+        {
+            if (UseJsonSerialization())
+            {
+                return JsonSerializer.Serialize(model);
+            }
+            else
+            {
+                var factory = new XmlSerializerFactory(XmlSerialization.Contract);
+                var serializer = factory.CreateSerializer(model.GetType());
+                return serializer.Serialize(model);
+            }
+        }
+
+        private string Serialize(List<CarViewModel> cars)
+        {
+            if (UseJsonSerialization())
+            {
+                return JsonSerializer.Serialize(cars);
+            }
+            else
+            {
+                var factory = new XmlSerializerFactory(XmlSerialization.Contract);
+                var serializer = factory.CreateSerializer(cars.GetType());
+                return serializer.Serialize(cars);
+            }
+        }
+
+        private bool UseJsonSerialization() => string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase);
 
         private void WriteRequestTimeHeader()
         {

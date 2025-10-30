@@ -1,9 +1,8 @@
 ﻿using HttpClient = Masasamjant.Http.Abstractions.HttpClient;
 using Masasamjant.Http.Abstractions;
-using System.Text;
 using System.Net.Http.Headers;
-using System.Xml.Serialization;
 using System.Xml;
+using Masasamjant.Xml;
 
 namespace Masasamjant.Http.Xml
 {
@@ -28,7 +27,13 @@ namespace Masasamjant.Http.Xml
             httpClient.BaseAddress = new Uri(httpBaseAddressProvider.GetHttpBaseAdress());
             httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(ContentType));
+            XmlSerialization = XmlSerialization.Contract;
         }
+
+        /// <summary>
+        /// Gets what XML serialization is performed.
+        /// </summary>
+        public XmlSerialization XmlSerialization { get; internal set; }
 
         /// <summary>
         /// Perform HTTP GET request using specified <see cref="HttpGetRequest"/>.
@@ -205,7 +210,7 @@ namespace Masasamjant.Http.Xml
             return DeserializeXml<T>(contentValue);
         }
 
-        private static T? DeserializeXml<T>(string? xml)
+        private T? DeserializeXml<T>(string? xml)
         {
             if (string.IsNullOrWhiteSpace(xml))
                 return default;
@@ -213,24 +218,17 @@ namespace Masasamjant.Http.Xml
             var document = new XmlDocument();
             document.LoadXml(xml);
 
-            var serializer = new XmlSerializer(typeof(T));
-
-            using (var reader = new XmlNodeReader(document))
-            {
-                return (T?)serializer.Deserialize(reader);
-            }
+            var factory = new XmlSerializerFactory(XmlSerialization);
+            var serializer = factory.CreateSerializer(typeof(T));
+            return serializer.Deserialize<T>(document);
         }
 
-        private static string? SerializeXml(object instance)
+        private string? SerializeXml(object instance)
         {
-            var builder = new StringBuilder();
-            using (var writer = new StringWriter(builder))
-            {
-                var serializer = new XmlSerializer(instance.GetType());
-                serializer.Serialize(writer, instance);
-                writer.Flush();
-            }
-            return builder.ToString();
+            var factory = new XmlSerializerFactory(XmlSerialization);
+            var serializer = factory.CreateSerializer(instance.GetType());
+            var xml = serializer.Serialize(instance);
+            return xml;
         }
     }
 }

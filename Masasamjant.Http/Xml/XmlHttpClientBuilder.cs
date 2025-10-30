@@ -1,4 +1,5 @@
 ﻿using Masasamjant.Http.Abstractions;
+using Masasamjant.Xml;
 using Microsoft.Extensions.Configuration;
 
 namespace Masasamjant.Http.Xml
@@ -29,6 +30,24 @@ namespace Masasamjant.Http.Xml
             var baseAddressProvider = HttpBaseAddressProviderFactory.GetBaseAddressProvider(clientPurpose);
             var client = new XmlHttpClient(HttpClientFactory, baseAddressProvider, CacheManager);
             return client;
+        }
+
+        /// <summary>
+        /// Configure the created <see cref="IHttpClient"/> instance before it is used. This checks for XML serialization in configuration and if 
+        /// override found and valid, then sets configured value.
+        /// </summary>
+        /// <param name="client">The <see cref="IHttpClient"/> obtained from <see cref="CreateClient(string)"/>.</param>
+        /// <param name="clientPurpose">The purpose of the HTTP client.</param>
+        protected override void ConfigureClient(IHttpClient client, string clientPurpose)
+        {
+            var httpClientSection = Configuration.GetRequiredSection("HttpClient");
+            var clientPurposeSection = Configuration.GetRequiredSection(clientPurpose);
+            var serialization = clientPurposeSection["XmlSerialization"];
+            
+            if (!string.IsNullOrWhiteSpace(serialization) && Enum.TryParse<XmlSerialization>(serialization, true, out var result))
+            {
+                ((XmlHttpClient)client).XmlSerialization = result;
+            }
         }
     }
 }
