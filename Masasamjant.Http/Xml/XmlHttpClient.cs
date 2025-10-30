@@ -1,26 +1,27 @@
 ﻿using HttpClient = Masasamjant.Http.Abstractions.HttpClient;
 using Masasamjant.Http.Abstractions;
+using System.Text;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json;
+using System.Xml.Serialization;
+using System.Xml;
 
-namespace Masasamjant.Http.Json
+namespace Masasamjant.Http.Xml
 {
     /// <summary>
-    /// Represents HTTP client that accepts JSON data.
+    /// Represents HTTP client that accepts XML data.
     /// </summary>
-    public sealed class JsonHttpClient : HttpClient
+    public sealed class XmlHttpClient : HttpClient
     {
         private readonly System.Net.Http.HttpClient httpClient;
-        private const string ContentType = "application/json";
+        private const string ContentType = "application/xml";
 
         /// <summary>
-        /// Initializes new instance of the <see cref="JsonHttpClient"/> class.
+        /// Initializes new instance of the <see cref="XmlHttpClient"/> class.
         /// </summary>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="httpBaseAddressProvider">The <see cref="IHttpBaseAddressProvider"/>.</param>
         /// <param name="httpCacheManager">The <see cref="IHttpCacheManager"/>.</param>
-        public JsonHttpClient(IHttpClientFactory httpClientFactory, IHttpBaseAddressProvider httpBaseAddressProvider, IHttpCacheManager httpCacheManager)
+        public XmlHttpClient(IHttpClientFactory httpClientFactory, IHttpBaseAddressProvider httpBaseAddressProvider, IHttpCacheManager httpCacheManager)
             : base(httpCacheManager)
         {
             httpClient = httpClientFactory.CreateClient();
@@ -46,6 +47,7 @@ namespace Masasamjant.Http.Json
 
                 // Check if the result of previous request might be in cache.
                 var (Cached, Result) = await TryGetCacheResultAsync<T>(request);
+
                 if (Cached)
                     return Result;
 
@@ -61,13 +63,13 @@ namespace Masasamjant.Http.Json
 
                 // Caches results if possible.
                 await CacheResultAsync(request, response, ContentType);
-                
-                var result = await response.Content.ReadFromJsonAsync<T>();
+
+                var result = await response.Content.ReadAsStringAsync();
 
                 // Inform listeners about executed request.
                 await OnExecutedHttpClientListenersAsync(request);
 
-                return result;
+                return DeserializeXml<T>(result);
             }
             catch (Exception exception)
             {
@@ -105,8 +107,14 @@ namespace Masasamjant.Http.Json
         {
             try
             {
-                // Execute interceptors an check if request was canceled.
+                // Execute interceptors and check if request was canceled.
                 if (await IsCanceledByInterceptorsAsync(request))
+                    return default;
+             
+                // Serialize request data to XML.
+                var xml = SerializeXml(request.Data);
+
+                if (xml == null)
                     return default;
 
                 // Add HTTP headers defined in request.
@@ -116,16 +124,16 @@ namespace Masasamjant.Http.Json
                 await OnExecutingHttpClientListenersAsync(request);
 
                 // Perform request.
-                var response = await httpClient.PostAsJsonAsync(request.RequestUri, request.Data, request.CancellationToken);
+                var response = await httpClient.PostAsync(request.RequestUri, new StringContent(xml), request.CancellationToken);
                 response = response.EnsureSuccessStatusCode();
 
-                // Read result
-                var result = await response.Content.ReadFromJsonAsync<TResult>();
+                // Read result.
+                var result = await response.Content.ReadAsStringAsync();
 
                 // Inform listeners about executed request.
                 await OnExecutedHttpClientListenersAsync(request);
 
-                return result;
+                return DeserializeXml<TResult>(result);
             }
             catch (Exception exception)
             {
@@ -149,8 +157,16 @@ namespace Masasamjant.Http.Json
         {
             try
             {
-                // Execute interceptors an check if request should be canceled.
+                // Execute interceptors and check if request was canceled.
                 if (await IsCanceledByInterceptorsAsync(request))
+                    return;
+
+                // Serialize request data to XML.
+                // Since data could be anything, reconsider adding check if data is string or XML document etc.,
+                // but for now just attempt to serialize to XML.
+                var xml = SerializeXml(request.Data);
+
+                if (xml == null)
                     return;
 
                 // Add HTTP headers defined in request.
@@ -160,13 +176,13 @@ namespace Masasamjant.Http.Json
                 await OnExecutingHttpClientListenersAsync(request);
 
                 // Perform request.
-                var response = await httpClient.PostAsJsonAsync(request.RequestUri, request.Data, request.CancellationToken);
+                var response = await httpClient.PostAsync(request.RequestUri, new StringContent(xml), request.CancellationToken);
                 response = response.EnsureSuccessStatusCode();
 
                 // Inform listeners about executed request.
                 await OnExecutedHttpClientListenersAsync(request);
             }
-            catch (Exception exception)
+            catch (Exception exception) 
             {
                 // Inform listeners about request error.
                 await OnErrorHttpClientListenersAsync(request, exception);
@@ -184,12 +200,37 @@ namespace Masasamjant.Http.Json
         /// <typeparam name="T">The type of the deserialized object.</typeparam>
         /// <param name="contentValue">The cache content value to deserialize.</param>
         /// <returns>A deserialized value.</returns>
-        protected override T? DeserializeCacheContentValue<T>(string? contentValue) where T: default
+        protected override T? DeserializeCacheContentValue<T>(string? contentValue) where T : default
         {
-            if (contentValue == null)
+            return DeserializeXml<T>(contentValue);
+        }
+
+        private static T? DeserializeXml<T>(string? xml)
+        {
+            if (string.IsNullOrWhiteSpace(xml))
                 return default;
 
-            return JsonSerializer.Deserialize<T>(contentValue);
+            var document = new XmlDocument();
+            document.LoadXml(xml);
+
+            var serializer = new XmlSerializer(typeof(T));
+
+            using (var reader = new XmlNodeReader(document))
+            {
+                return (T?)serializer.Deserialize(reader);
+            }
+        }
+
+        private static string? SerializeXml(object instance)
+        {
+            var builder = new StringBuilder();
+            using (var writer = new StringWriter(builder))
+            {
+                var serializer = new XmlSerializer(instance.GetType());
+                serializer.Serialize(writer, instance);
+                writer.Flush();
+            }
+            return builder.ToString();
         }
     }
 }

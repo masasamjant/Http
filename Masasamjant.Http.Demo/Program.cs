@@ -1,7 +1,4 @@
-using Masasamjant.Http.Abstractions;
 using Masasamjant.Http.Caching;
-using Masasamjant.Http.Json;
-using IHttpClientBuilder = Masasamjant.Http.Abstractions.IHttpClientBuilder;
 
 namespace Masasamjant.Http.Demo
 {

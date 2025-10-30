@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace Masasamjant.Http.Demo.Models
 {
@@ -39,6 +40,8 @@ namespace Masasamjant.Http.Demo.Models
         [Display(Name = "Type")]
         public CarType CarType { get; set; } = CarType.Unspecified;
 
+        [JsonIgnore]
+        [XmlIgnore]
         public bool GenerateNewIdentifier { get; set; }
     }
 

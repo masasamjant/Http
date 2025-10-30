@@ -10,6 +10,22 @@ namespace Masasamjant.Http.Abstractions
     public abstract class HttpClient : IHttpClient
     {
         /// <summary>
+        /// Initializes new instance of the <see cref="HttpClient"/> class.
+        /// </summary>
+        /// <param name="cacheManager">The <see cref="IHttpCacheManager"/>.</param>
+        protected HttpClient(IHttpCacheManager cacheManager)
+        {
+            CacheManager = cacheManager;
+        }
+
+        /// <summary>
+        /// Initializes new default instance of the <see cref="HttpClient"/> class.
+        /// </summary>
+        protected HttpClient()
+            : this(HttpCacheManager.Default)
+        { }
+
+        /// <summary>
         /// Gets the <see cref="HttpGetRequestInterceptorCollection"/> for interceptors executed 
         /// when HTTP GET request is performed.
         /// </summary>
@@ -25,6 +41,11 @@ namespace Masasamjant.Http.Abstractions
         /// Gets the <see cref="HttpClientListenerCollection"/> for listeners of HTTP request execution.
         /// </summary>
         public HttpClientListenerCollection HttpClientListeners { get; } = new HttpClientListenerCollection();
+
+        /// <summary>
+        /// Gets the <see cref="IHttpCacheManager"/>.
+        /// </summary>
+        protected IHttpCacheManager CacheManager { get; }
 
         /// <summary>
         /// Perform HTTP GET request using specified <see cref="HttpGetRequest"/>.
@@ -68,20 +89,18 @@ namespace Masasamjant.Http.Abstractions
         /// then remaining interceptors are not executed.
         /// </summary>
         /// <param name="request">The intercepted <see cref="HttpGetRequest"/>.</param>
-        /// <returns><c>true</c> if <paramref name="request"/> should be canceled; <c>false</c> otherwise.</returns>
-        protected async Task<HttpRequestInterception> ExecuteInterceptorsAsync(HttpGetRequest request)
+        /// <returns><c>true</c> if <paramref name="request"/> was canceled by interceptors; <c>false</c> otherwise.</returns>
+        protected async Task<bool> IsCanceledByInterceptorsAsync(HttpGetRequest request)
         {
-            // Execute each interceptor and check if some indicated that request should be canceled.
-            foreach (var interceptor in HttpGetRequestInterceptors)
-            { 
-                var interception = await interceptor.InterceptAsync(request);
+            var interception = await ExecuteInterceptorsAsync(request);
 
-                if (interception.Result == HttpRequestInterceptionResult.Cancel)
-                    return interception;
+            if (interception.CancelRequest)
+            {
+                PerformRequestInterceptionCancellation(request, interception);
+                return true;
             }
 
-            // No interceptors or none indicated cancellation.
-            return HttpRequestInterception.Continue;
+            return false;
         }
 
         /// <summary>
@@ -90,20 +109,18 @@ namespace Masasamjant.Http.Abstractions
         /// then remaining interceptors are not executed.
         /// </summary>
         /// <param name="request">The intercepted <see cref="HttpPostRequest"/>.</param>
-        /// <returns><c>true</c> if <paramref name="request"/> should be canceled; <c>false</c> otherwise.</returns>
-        protected async Task<HttpRequestInterception> ExecuteInterceptorsAsync(HttpPostRequest request)
+        /// <returns><c>true</c> if <paramref name="request"/> was canceled by interceptors; <c>false</c> otherwise.</returns>
+        protected async Task<bool> IsCanceledByInterceptorsAsync(HttpPostRequest request)
         {
-            // Execute each interceptor and check if some indicated that request should be canceled.
-            foreach (var interceptor in HttpPostRequestInterceptors)
-            {
-                var interception = await interceptor.InterceptAsync(request);
+            var interception = await ExecuteInterceptorsAsync(request);
 
-                if (interception.Result == HttpRequestInterceptionResult.Cancel)
-                    return interception;
+            if (interception.CancelRequest)
+            {
+                PerformRequestInterceptionCancellation(request, interception);
+                return true;
             }
 
-            // No interceptors or none indicated cancellation.
-            return HttpRequestInterception.Continue;
+            return false;
         }
 
         /// <summary>
@@ -163,13 +180,89 @@ namespace Masasamjant.Http.Abstractions
         }
 
         /// <summary>
-        /// Cancel specified <see cref="HttpRequest"/> and throw <see cref="HttpRequestInterceptionException"/> if specified <see cref="HttpRequestInterception"/> indicates that exception should be thrown.
+        /// Cache results of specified HTTP Get request is results can be cached.
         /// </summary>
-        /// <param name="request">The intercepted HTTP request.</param>
-        /// <param name="interception">The <see cref="HttpRequestInterception"/> that indicates that request should be canceled.</param>
-        /// <exception cref="HttpRequestInterceptionException">If <paramref name="interception"/> indicates that exception should be thrown.</exception>
-        /// <exception cref="ArgumentException">If <paramref name="interception"/> indicates that request should not be canceled.</exception>
-        protected static void PerformRequestInterceptionCancellation(HttpRequest request, HttpRequestInterception interception)
+        /// <param name="request">The <see cref="HttpGetRequest"/>.</param>
+        /// <param name="response">The <see cref="HttpResponseMessage"/>.</param>
+        /// <param name="contentType">The content type.</param>
+        protected async Task CacheResultAsync(HttpGetRequest request, HttpResponseMessage response, string contentType)
+        {
+            if (request.Caching.CanCacheResult)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    await response.Content.CopyToAsync(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    using (var reader = new StreamReader(stream))
+                    {
+                        var value = await reader.ReadToEndAsync();
+                        await CacheManager.AddCacheContentAsync(request, value, contentType, request.Caching.CacheDuration);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tries to get cached result of the previous HTTP Get request.
+        /// </summary>
+        /// <typeparam name="T">The type of the result.</typeparam>
+        /// <param name="request">The current <see cref="HttpGetRequest"/>.</param>
+        /// <returns>A tuple of indication is result was found from cache and the result.</returns>
+        protected async Task<(bool Cached, T? Result)> TryGetCacheResultAsync<T>(HttpGetRequest request)
+        {
+            if (request.Caching.CanCacheResult)
+            {
+                var cacheContent = await CacheManager.GetCacheContentAsync(request);
+                if (cacheContent != null && cacheContent.ContentValue != null)
+                {
+                    var cacheResult = DeserializeCacheContentValue<T>(cacheContent.ContentValue);
+                    request.Caching.IsCacheResult = true;
+                    return (true, cacheResult);
+                }
+            }
+
+            return (false, default);
+        }
+
+        /// <summary>
+        /// Derived classes must override to deserialize cache content value.
+        /// </summary>
+        /// <typeparam name="T">The type of the deserialized object.</typeparam>
+        /// <param name="contentValue">The cache content value to deserialize.</param>
+        /// <returns>A deserialized value.</returns>
+        protected abstract T? DeserializeCacheContentValue<T>(string? contentValue);
+
+        private async Task<HttpRequestInterception> ExecuteInterceptorsAsync(HttpGetRequest request)
+        {
+            // Execute each interceptor and check if some indicated that request should be canceled.
+            foreach (var interceptor in HttpGetRequestInterceptors)
+            {
+                var interception = await interceptor.InterceptAsync(request);
+
+                if (interception.Result == HttpRequestInterceptionResult.Cancel)
+                    return interception;
+            }
+
+            // No interceptors or none indicated cancellation.
+            return HttpRequestInterception.Continue;
+        }
+
+        private async Task<HttpRequestInterception> ExecuteInterceptorsAsync(HttpPostRequest request)
+        {
+            // Execute each interceptor and check if some indicated that request should be canceled.
+            foreach (var interceptor in HttpPostRequestInterceptors)
+            {
+                var interception = await interceptor.InterceptAsync(request);
+
+                if (interception.Result == HttpRequestInterceptionResult.Cancel)
+                    return interception;
+            }
+
+            // No interceptors or none indicated cancellation.
+            return HttpRequestInterception.Continue;
+        }
+
+        private static void PerformRequestInterceptionCancellation(HttpRequest request, HttpRequestInterception interception)
         {
             if (!interception.CancelRequest)
                 throw new ArgumentException("The interception indicates that request should not be canceled.", nameof(interception));

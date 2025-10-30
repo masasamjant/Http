@@ -1,5 +1,4 @@
-﻿using Masasamjant.Http.Interceptors;
-using System.Text;
+﻿using System.Text;
 
 namespace Masasamjant.Http.Abstractions
 {
@@ -14,16 +13,24 @@ namespace Masasamjant.Http.Abstractions
             client.HttpGetRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Continue, lines));
             client.HttpGetRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Continue, lines));
             var request = new HttpGetRequest("api/Test");
-            var interception = await client.TestExecuteInterceptorsAsync(request);
+            var requestCanceled = false;
+            request.Canceled += (s, e) =>
+            {
+                requestCanceled = true;
+            };
+            var canceled = await client.TestIsCanceledByInterceptorsAsync(request);
             Assert.AreEqual(2, lines.Count);
-            Assert.IsTrue(interception.Result == HttpRequestInterceptionResult.Continue);
+            Assert.IsFalse(canceled);
+            Assert.IsFalse(requestCanceled);
             lines.Clear();
+
             client.HttpGetRequestInterceptors.Clear();
             client.HttpGetRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Cancel(HttpRequestInterceptionCancelBehavior.Return, "Testing"), lines));
             client.HttpGetRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Continue, lines));
-            interception = await client.TestExecuteInterceptorsAsync(request);
+            canceled = await client.TestIsCanceledByInterceptorsAsync(request);
             Assert.AreEqual(1, lines.Count);
-            Assert.IsTrue(interception.Result == HttpRequestInterceptionResult.Cancel);
+            Assert.IsTrue(canceled);
+            Assert.IsTrue(requestCanceled);
         }
 
         [TestMethod]
@@ -34,16 +41,24 @@ namespace Masasamjant.Http.Abstractions
             client.HttpPostRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Continue, lines));
             client.HttpPostRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Continue, lines));
             var request = new HttpPostRequest("api/Test", DateTime.Now);
-            var interception = await client.TestExecuteInterceptorsAsync(request);
+            var requestCanceled = false;
+            request.Canceled += (s, e) =>
+            {
+                requestCanceled = true;
+            };
+            var canceled = await client.TestIsCanceledByInterceptorsAsync(request);
             Assert.AreEqual(2, lines.Count);
-            Assert.IsTrue(interception.Result == HttpRequestInterceptionResult.Continue);
+            Assert.IsFalse(canceled);
+            Assert.IsFalse(requestCanceled);
             lines.Clear();
+            
             client.HttpPostRequestInterceptors.Clear();
             client.HttpPostRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Cancel(HttpRequestInterceptionCancelBehavior.Return, "Testing"), lines));
             client.HttpPostRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Continue, lines));
-            interception = await client.TestExecuteInterceptorsAsync(request);
+            canceled = await client.TestIsCanceledByInterceptorsAsync(request);
             Assert.AreEqual(1, lines.Count);
-            Assert.IsTrue(interception.Result == HttpRequestInterceptionResult.Cancel);
+            Assert.IsTrue(canceled);
+            Assert.IsTrue(requestCanceled);
         }
 
         [TestMethod]
@@ -93,26 +108,6 @@ namespace Masasamjant.Http.Abstractions
             Assert.IsFalse(headers.GetValues("name").Contains("value"));
             Assert.IsTrue(headers.GetValues("name").Contains("name"));
             Assert.IsTrue(headers.GetValues("test").Contains("test"));
-        }
-
-        [TestMethod]
-        public void Test_PerformRequestInterceptionCancellation()
-        {
-            bool canceled = false;
-            var request = new HttpGetRequest("api/Test");
-            request.Canceled += (s, e) => { canceled = true; };
-            Assert.ThrowsException<ArgumentException>(() => {
-                TestHttpClient.TestPerformRequestInterceptionCancellation(request, HttpRequestInterception.Continue);
-            });
-            Assert.ThrowsException<HttpRequestInterceptionException>(() => {
-                TestHttpClient.TestPerformRequestInterceptionCancellation(request, HttpRequestInterception.Cancel(HttpRequestInterceptionCancelBehavior.Throw, "Testing"));
-            });
-            Assert.IsTrue(canceled);
-            canceled = false;
-            request = new HttpGetRequest("api/Test");
-            request.Canceled += (s, e) => { canceled = true; };
-            TestHttpClient.TestPerformRequestInterceptionCancellation(request, HttpRequestInterception.Cancel(HttpRequestInterceptionCancelBehavior.Return, "Testing"));
-            Assert.IsTrue(canceled);
         }
     }
 }

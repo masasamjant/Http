@@ -28,10 +28,6 @@ namespace Masasamjant.Http
             throw new NotImplementedException();
         }
 
-        public async Task<HttpRequestInterception> TestExecuteInterceptorsAsync(HttpGetRequest request) => await ExecuteInterceptorsAsync(request);
-
-        public async Task<HttpRequestInterception> TestExecuteInterceptorsAsync(HttpPostRequest request) => await ExecuteInterceptorsAsync(request);
-
         public async Task TestOnExecutingHttpClientListenersAsync(HttpRequest request) => await OnExecutingHttpClientListenersAsync(request);
 
         public async Task TestOnExecutedHttpClientListenersAsync(HttpRequest request) => await OnExecutedHttpClientListenersAsync(request);
@@ -40,6 +36,13 @@ namespace Masasamjant.Http
 
         public static void TestAddHttpHeaders(HttpRequest request, HttpHeaders headers) => AddHttpHeaders(request, headers);
 
-        public static void TestPerformRequestInterceptionCancellation(HttpRequest request, HttpRequestInterception interception) => PerformRequestInterceptionCancellation(request, interception);
+        public async Task<bool> TestIsCanceledByInterceptorsAsync(HttpGetRequest request) => await IsCanceledByInterceptorsAsync(request);
+
+        public async Task<bool> TestIsCanceledByInterceptorsAsync(HttpPostRequest request) => await IsCanceledByInterceptorsAsync(request);
+
+        protected override T? DeserializeCacheContentValue<T>(string? contentValue) where T : default
+        {
+            throw new NotImplementedException();
+        }
     }
 }
