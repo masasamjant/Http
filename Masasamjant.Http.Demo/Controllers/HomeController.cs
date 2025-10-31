@@ -32,6 +32,9 @@ namespace Masasamjant.Http.Demo.Controllers
 
                 // Add interceptor that adds request identifier to HTTP header.
                 client.AddRequestIdentifierHeaderInterceptor("X-Request-Identifier");
+
+                //Add interceptor that add culture names to HTTP header.
+                client.AddCultureNamesHeaderInterceptor("X-Current-Culture", "X-Current-UI-Culture");
                 
                 return client;
             }
