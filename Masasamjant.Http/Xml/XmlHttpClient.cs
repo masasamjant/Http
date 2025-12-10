@@ -56,35 +56,18 @@ namespace Masasamjant.Http.Xml
                 if (Cached)
                     return Result;
 
-                // Add HTTP headers defined in request.
                 AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
-
-                // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
-
-                // Perform request
-                var response = await httpClient.GetAsync(request.FullRequestUri, request.CancellationToken);
-                response = response.EnsureSuccessStatusCode();
-
-                // Caches results if possible.
+                var response = await PerformGetRequestAsync(request);
                 await CacheResultAsync(request, response, ContentType);
-
                 var result = await response.Content.ReadAsStringAsync();
-
-                // Inform listeners about executed request.
                 await OnExecutedHttpClientListenersAsync(request);
 
                 return DeserializeXml<T>(result);
             }
             catch (Exception exception)
             {
-                // Inform listeners about request error.
-                await OnErrorHttpClientListenersAsync(request, exception);
-
-                if (exception is HttpRequestException)
-                    throw;
-
-                throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP GET request.", exception);
+                throw await HandleRequestExceptionAsync(request, exception, "The unexpected exception occurred while performing HTTP GET request.");
             }
         }
 
@@ -122,33 +105,17 @@ namespace Masasamjant.Http.Xml
                 if (xml == null)
                     return default;
 
-                // Add HTTP headers defined in request.
                 AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
-
-                // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
-
-                // Perform request.
-                var response = await httpClient.PostAsync(request.RequestUri, new StringContent(xml), request.CancellationToken);
-                response = response.EnsureSuccessStatusCode();
-
-                // Read result.
+                var response = await PerformPostRequestAsync(request, xml);
                 var result = await response.Content.ReadAsStringAsync();
-
-                // Inform listeners about executed request.
                 await OnExecutedHttpClientListenersAsync(request);
 
                 return DeserializeXml<TResult>(result);
             }
             catch (Exception exception)
             {
-                // Inform listeners about request error.
-                await OnErrorHttpClientListenersAsync(request, exception);
-
-                if (exception is HttpRequestException)
-                    throw;
-
-                throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP POST request.", exception);
+                throw await HandleRequestExceptionAsync(request, exception, "The unexpected exception occurred while performing HTTP POST request.");
             }
         }
 
@@ -174,28 +141,14 @@ namespace Masasamjant.Http.Xml
                 if (xml == null)
                     return;
 
-                // Add HTTP headers defined in request.
                 AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
-
-                // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
-
-                // Perform request.
-                var response = await httpClient.PostAsync(request.RequestUri, new StringContent(xml), request.CancellationToken);
-                response = response.EnsureSuccessStatusCode();
-
-                // Inform listeners about executed request.
+                var response = await PerformPostRequestAsync(request, xml);
                 await OnExecutedHttpClientListenersAsync(request);
             }
             catch (Exception exception) 
             {
-                // Inform listeners about request error.
-                await OnErrorHttpClientListenersAsync(request, exception);
-
-                if (exception is HttpRequestException)
-                    throw;
-
-                throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP POST request.", exception);
+                throw await HandleRequestExceptionAsync(request, exception, "The unexpected exception occurred while performing HTTP POST request.");
             }
         }
 
@@ -208,6 +161,18 @@ namespace Masasamjant.Http.Xml
         protected override T? DeserializeCacheContentValue<T>(string? contentValue) where T : default
         {
             return DeserializeXml<T>(contentValue);
+        }
+
+        private async Task<HttpResponseMessage> PerformPostRequestAsync(HttpPostRequest request, string xml)
+        {
+            var response = await httpClient.PostAsync(request.RequestUri, new StringContent(xml), request.CancellationToken);
+            return response.EnsureSuccessStatusCode();
+        }
+
+        private async Task<HttpResponseMessage> PerformGetRequestAsync(HttpGetRequest request)
+        {
+            var response = await httpClient.GetAsync(request.FullRequestUri, request.CancellationToken);
+            return response.EnsureSuccessStatusCode();
         }
 
         private T? DeserializeXml<T>(string? xml)

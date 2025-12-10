@@ -49,35 +49,18 @@ namespace Masasamjant.Http.Json
                 if (Cached)
                     return Result;
 
-                // Add HTTP headers defined in request.
                 AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
-
-                // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
-
-                // Perform request
-                var response = await httpClient.GetAsync(request.FullRequestUri, request.CancellationToken);
-                response = response.EnsureSuccessStatusCode();
-
-                // Caches results if possible.
+                var response = await PerformGetRequestAsync(request);
                 await CacheResultAsync(request, response, ContentType);
-                
                 var result = await response.Content.ReadFromJsonAsync<T>();
-
-                // Inform listeners about executed request.
                 await OnExecutedHttpClientListenersAsync(request);
 
                 return result;
             }
             catch (Exception exception)
             {
-                // Inform listeners about request error.
-                await OnErrorHttpClientListenersAsync(request, exception);
-
-                if (exception is HttpRequestException)
-                    throw;
-
-                throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP GET request.", exception);
+                throw await HandleRequestExceptionAsync(request, exception, "The unexpected exception occurred while performing HTTP GET request.");
             }
         }
 
@@ -109,33 +92,17 @@ namespace Masasamjant.Http.Json
                 if (await IsCanceledByInterceptorsAsync(request))
                     return default;
 
-                // Add HTTP headers defined in request.
                 AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
-
-                // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
-
-                // Perform request.
-                var response = await httpClient.PostAsJsonAsync(request.RequestUri, request.Data, request.CancellationToken);
-                response = response.EnsureSuccessStatusCode();
-
-                // Read result
+                var response = await PerformPostRequestAsync(request);
                 var result = await response.Content.ReadFromJsonAsync<TResult>();
-
-                // Inform listeners about executed request.
                 await OnExecutedHttpClientListenersAsync(request);
 
                 return result;
             }
             catch (Exception exception)
             {
-                // Inform listeners about request error.
-                await OnErrorHttpClientListenersAsync(request, exception);
-
-                if (exception is HttpRequestException)
-                    throw;
-
-                throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP POST request.", exception);
+                throw await HandleRequestExceptionAsync(request, exception, "The unexpected exception occurred while performing HTTP POST request.");
             }
         }
 
@@ -153,28 +120,14 @@ namespace Masasamjant.Http.Json
                 if (await IsCanceledByInterceptorsAsync(request))
                     return;
 
-                // Add HTTP headers defined in request.
                 AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
-
-                // Inform listeners about request to be executed.
                 await OnExecutingHttpClientListenersAsync(request);
-
-                // Perform request.
-                var response = await httpClient.PostAsJsonAsync(request.RequestUri, request.Data, request.CancellationToken);
-                response = response.EnsureSuccessStatusCode();
-
-                // Inform listeners about executed request.
+                var response = await PerformPostRequestAsync(request);
                 await OnExecutedHttpClientListenersAsync(request);
             }
             catch (Exception exception)
             {
-                // Inform listeners about request error.
-                await OnErrorHttpClientListenersAsync(request, exception);
-
-                if (exception is HttpRequestException)
-                    throw;
-
-                throw new HttpRequestException(request, "The unexpected exception occurred while performing HTTP POST request.", exception);
+                throw await HandleRequestExceptionAsync(request, exception, "The unexpected exception occurred while performing HTTP POST request.");
             }
         }
 
@@ -190,6 +143,18 @@ namespace Masasamjant.Http.Json
                 return default;
 
             return JsonSerializer.Deserialize<T>(contentValue);
+        }
+
+        private async Task<HttpResponseMessage> PerformGetRequestAsync(HttpGetRequest request)
+        {
+            var response = await httpClient.GetAsync(request.FullRequestUri, request.CancellationToken);
+            return response.EnsureSuccessStatusCode();
+        }
+
+        private async Task<HttpResponseMessage> PerformPostRequestAsync(HttpPostRequest request)
+        {
+            var response = await httpClient.PostAsJsonAsync(request.RequestUri, request.Data, request.CancellationToken);
+            return response.EnsureSuccessStatusCode();
         }
     }
 }

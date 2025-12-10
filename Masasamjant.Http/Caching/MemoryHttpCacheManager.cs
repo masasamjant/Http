@@ -34,26 +34,31 @@ namespace Masasamjant.Http.Caching
         
             lock (cacheLock)
             {
-                if (keys.ContainsKey(contentKey))
-                    keys.Remove(contentKey);
-
-                var uri = request.RequestUri;
-
-                if (!contentsLookup.TryGetValue(uri, out var contents))
-                {
-                    contents = new Dictionary<string, HttpCacheContent>();
-                    contentsLookup.Add(uri, contents);
-                }
-
-                if (contents.ContainsKey(contentKey))
-                    contents.Remove(contentKey);
-
-                DateTimeOffset expires = DateTimeOffset.UtcNow.Add(duration);
-                keys.Add(contentKey, expires);
+                keys.Remove(contentKey);
+                var contents = GetOrAddCacheContent(request.RequestUri);
+                contents.Remove(contentKey);
+                AddContentKey(contentKey, duration);
                 contents.Add(contentKey, new HttpCacheContent(contentKey, contentValue, contentType));
             }
 
             return Task.CompletedTask;
+        }
+
+        private Dictionary<string, HttpCacheContent> GetOrAddCacheContent(string uri)
+        {
+            if (!contentsLookup.TryGetValue(uri, out var contents))
+            {
+                contents = new Dictionary<string, HttpCacheContent>();
+                contentsLookup.Add(uri, contents);
+            }
+
+            return contents;
+        }
+
+        private void AddContentKey(string contentKey, TimeSpan duration)
+        {
+            DateTimeOffset expires = DateTimeOffset.UtcNow.Add(duration);
+            keys.Add(contentKey, expires);
         }
 
         /// <summary>
@@ -72,30 +77,44 @@ namespace Masasamjant.Http.Caching
                 var uri = request.RequestUri;
 
                 if (keys.TryGetValue(contentKey, out var expires))
-                {
-                    if (contentsLookup.TryGetValue(uri, out var contents))
-                    {
-                        if (contents.TryGetValue(contentKey, out content))
-                        {
-                            bool expired = expires < DateTimeOffset.UtcNow;
-
-                            if (expired)
-                            {
-                                keys.Remove(contentKey);
-                                contents.Remove(contentKey);
-                                content = null;
-                            }
-                        }
-                    }
-                }
+                    content = GetHttpCacheContent(uri, contentKey, expires);
                 else
-                {
-                    if (contentsLookup.TryGetValue(uri, out var contents))
-                        contents.Remove(contentKey);
-                }
+                    RemoveContentsLookup(uri, contentKey);
             }
 
             return Task.FromResult(content);
+        }
+
+        private HttpCacheContent? GetHttpCacheContent(string uri, string contentKey, DateTimeOffset expires)
+        {
+            if (contentsLookup.TryGetValue(uri, out var contents) &&
+                contents.TryGetValue(contentKey, out var content))
+            {
+                if (IsExpired(expires))
+                {
+                    RemoveExpiredContent(contents, contentKey);
+                    return null;
+                }
+                else
+                    return content;
+            }
+
+            return null;
+        }
+
+        private static bool IsExpired(DateTimeOffset expires)
+            => expires < DateTimeOffset.UtcNow;
+
+        private void RemoveExpiredContent(Dictionary<string, HttpCacheContent> contents, string contentKey)
+        {
+            keys.Remove(contentKey);
+            contents.Remove(contentKey);
+        }
+
+        private void RemoveContentsLookup(string uri, string contentKey)
+        {
+            if (contentsLookup.TryGetValue(uri, out var contents))
+                contents.Remove(contentKey);
         }
     }
 }

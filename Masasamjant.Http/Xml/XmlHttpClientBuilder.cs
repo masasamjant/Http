@@ -41,7 +41,7 @@ namespace Masasamjant.Http.Xml
         protected override void ConfigureClient(IHttpClient client, string clientPurpose)
         {
             var httpClientSection = Configuration.GetRequiredSection("HttpClient");
-            var clientPurposeSection = Configuration.GetRequiredSection(clientPurpose);
+            var clientPurposeSection = httpClientSection.GetRequiredSection(clientPurpose);
             var serialization = clientPurposeSection["XmlSerialization"];
             
             if (!string.IsNullOrWhiteSpace(serialization) && Enum.TryParse<XmlSerialization>(serialization, true, out var result))

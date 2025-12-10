@@ -56,24 +56,22 @@ namespace Masasamjant.Http.Interceptors
 
         private HttpRequestInterception AddCultureNameHeaders(HttpRequest request)
         {
-            if (!string.IsNullOrWhiteSpace(CurrentCultureHeaderName))
-                AddCurrentCultureNameHeader(request, CurrentCultureHeaderName);
-
-            if (!string.IsNullOrWhiteSpace(CurrentUICultureHeaderName) && 
-                !string.Equals(CurrentUICultureHeaderName, CurrentCultureHeaderName, StringComparison.Ordinal))
-                AddCurrentUICultureNameHeader(request, CurrentUICultureHeaderName);
-
+            AddCurrentCultureNameHeader(request);
+            AddCurrentUICultureNameHeader(request);
             return HttpRequestInterception.Continue;
         }
 
-        private static void AddCurrentCultureNameHeader(HttpRequest request, string currentCultureHeader)
+        private void AddCurrentCultureNameHeader(HttpRequest request)
         {
-            request.Headers.Add(currentCultureHeader, CultureInfo.CurrentCulture.Name);
+            if (!string.IsNullOrWhiteSpace(CurrentCultureHeaderName))
+                request.Headers.Add(CurrentCultureHeaderName, CultureInfo.CurrentCulture.Name);
         }
 
-        private static void AddCurrentUICultureNameHeader(HttpRequest request, string currentUICultureHeader)
+        private void AddCurrentUICultureNameHeader(HttpRequest request)
         {
-            request.Headers.Add(currentUICultureHeader, CultureInfo.CurrentUICulture.Name);
+            if (!string.IsNullOrWhiteSpace(CurrentUICultureHeaderName) &&
+                !string.Equals(CurrentUICultureHeaderName, CurrentCultureHeaderName, StringComparison.Ordinal))
+                request.Headers.Add(CurrentUICultureHeaderName, CultureInfo.CurrentUICulture.Name);
         }
     }
 }

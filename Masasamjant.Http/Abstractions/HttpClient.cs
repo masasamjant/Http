@@ -1,6 +1,9 @@
-﻿using Masasamjant.Http.Interceptors;
+﻿using Masasamjant.Http.Caching;
+using Masasamjant.Http.Interceptors;
 using Masasamjant.Http.Listeners;
+using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 
 namespace Masasamjant.Http.Abstractions
 {
@@ -172,11 +175,15 @@ namespace Masasamjant.Http.Abstractions
 
             foreach (var header in request.Headers)
             {
-                if (headers.Contains(header.Name))
-                    headers.Remove(header.Name);
-
+                RemoveExistingHeader(headers, header.Name);
                 headers.Add(header.Name, header.Value);
             }
+        }
+
+        private static void RemoveExistingHeader(HttpHeaders headers, string headerName)
+        {
+            if (headers.Contains(headerName))
+                headers.Remove(headerName);
         }
 
         /// <summary>
@@ -188,17 +195,27 @@ namespace Masasamjant.Http.Abstractions
         protected async Task CacheResultAsync(HttpGetRequest request, HttpResponseMessage response, string contentType)
         {
             if (request.Caching.CanCacheResult)
+                return;
+
+            using (var stream = new MemoryStream())
             {
-                using (var stream = new MemoryStream())
-                {
-                    await response.Content.CopyToAsync(stream);
-                    stream.Seek(0, SeekOrigin.Begin);
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var value = await reader.ReadToEndAsync();
-                        await CacheManager.AddCacheContentAsync(request, value, contentType, request.Caching.CacheDuration);
-                    }
-                }
+                await CopyContentAsync(stream, response);
+                await CacheStreamContentAsync(stream, request, contentType);
+            }
+        }
+
+        private static async Task CopyContentAsync(MemoryStream stream, HttpResponseMessage response)
+        {
+            await response.Content.CopyToAsync(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        private async Task CacheStreamContentAsync(MemoryStream stream, HttpGetRequest request, string contentType)
+        {
+            using (var reader = new StreamReader(stream))
+            {
+                var value = await reader.ReadToEndAsync();
+                await CacheManager.AddCacheContentAsync(request, value, contentType, request.Caching.CacheDuration);
             }
         }
 
@@ -211,17 +228,24 @@ namespace Masasamjant.Http.Abstractions
         protected async Task<(bool Cached, T? Result)> TryGetCacheResultAsync<T>(HttpGetRequest request)
         {
             if (request.Caching.CanCacheResult)
+                return (false, default);
+          
+            var cacheContent = await CacheManager.GetCacheContentAsync(request);
+
+            if (cacheContent != null && cacheContent.ContentValue != null)
             {
-                var cacheContent = await CacheManager.GetCacheContentAsync(request);
-                if (cacheContent != null && cacheContent.ContentValue != null)
-                {
-                    var cacheResult = DeserializeCacheContentValue<T>(cacheContent.ContentValue);
-                    request.Caching.IsCacheResult = true;
-                    return (true, cacheResult);
-                }
+                var cacheResult = GetCacheResultFromContent<T>(cacheContent, request);
+                return (true, cacheResult);
             }
 
             return (false, default);
+        }
+
+        private T? GetCacheResultFromContent<T>(HttpCacheContent cacheContent, HttpGetRequest request)
+        {
+            var cacheResult = DeserializeCacheContentValue<T>(cacheContent.ContentValue);
+            request.Caching.IsCacheResult = true;
+            return cacheResult;
         }
 
         /// <summary>
@@ -273,6 +297,23 @@ namespace Masasamjant.Http.Abstractions
                 throw string.IsNullOrWhiteSpace(interception.CancelReason)
                     ? new HttpRequestInterceptionException(request)
                     : new HttpRequestInterceptionException(interception.CancelReason, request);
+        }
+
+        /// <summary>
+        /// Handles the exception occurred in performing HTTP request.
+        /// </summary>
+        /// <param name="request">The HTTP request.</param>
+        /// <param name="exception">The occurred exception.</param>
+        /// <param name="message">The exception message.</param>
+        /// <returns>A <see cref="HttpRequestException"/>.</returns>
+        protected async Task<HttpRequestException> HandleRequestExceptionAsync(HttpRequest request, Exception exception, string message)
+        {
+            await OnErrorHttpClientListenersAsync(request, exception);
+
+            if (exception is HttpRequestException requestException)
+                return requestException;
+
+            return new HttpRequestException(request, message, exception);
         }
     }
 }

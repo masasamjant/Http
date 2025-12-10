@@ -2,6 +2,7 @@
   "HttpClient": {
     "ClientPurpose": {
       "HttpBaseAddress": "http://localhost/"
+      /*"XmlSerialization": "Contract|Xml"*/
     }
   }
 }
