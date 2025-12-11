@@ -40,14 +40,19 @@ namespace Masasamjant.Http.Xml
         /// <param name="clientPurpose">The purpose of the HTTP client.</param>
         protected override void ConfigureClient(IHttpClient client, string clientPurpose)
         {
-            var httpClientSection = Configuration.GetRequiredSection("HttpClient");
-            var clientPurposeSection = httpClientSection.GetRequiredSection(clientPurpose);
-            var serialization = clientPurposeSection["XmlSerialization"];
-            
-            if (!string.IsNullOrWhiteSpace(serialization) && Enum.TryParse<XmlSerialization>(serialization, true, out var result))
+            if (client is XmlHttpClient xmlHttpClient)
             {
-                ((XmlHttpClient)client).XmlSerialization = result;
+                var httpClientSection = Configuration.GetRequiredSection("HttpClient");
+                var clientPurposeSection = httpClientSection.GetRequiredSection(clientPurpose);
+                var serialization = clientPurposeSection["XmlSerialization"];
+
+                if (!string.IsNullOrWhiteSpace(serialization) && Enum.TryParse<XmlSerialization>(serialization, true, out var result))
+                {
+                    xmlHttpClient.ChangeSerialization(result);
+                }
             }
+            else
+                throw new NotSupportedException($"HTTP client of '{client.GetType()}' is not supported.");
         }
     }
 }

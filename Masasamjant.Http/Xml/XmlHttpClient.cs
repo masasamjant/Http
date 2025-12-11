@@ -31,9 +31,22 @@ namespace Masasamjant.Http.Xml
         }
 
         /// <summary>
-        /// Gets what XML serialization is performed.
+        /// Gets what XML serialization is performed. Default value is <see cref="XmlSerialization.Contract"/>.
         /// </summary>
-        public XmlSerialization XmlSerialization { get; internal set; }
+        public XmlSerialization XmlSerialization { get; private set; }
+
+        /// <summary>
+        /// Change what XML serialization is performed.
+        /// </summary>
+        /// <param name="serialization">The XML serialization.</param>
+        /// <exception cref="ArgumentException">If value of <paramref name="serialization"/> is not defined.</exception>
+        public void ChangeSerialization(XmlSerialization serialization)
+        {
+            if (!Enum.IsDefined(typeof(XmlSerialization), serialization))
+                throw new ArgumentException("The value is not defined.", nameof(serialization));
+
+            XmlSerialization = serialization;
+        }
 
         /// <summary>
         /// Perform HTTP GET request using specified <see cref="HttpGetRequest"/>.
@@ -60,10 +73,9 @@ namespace Masasamjant.Http.Xml
                 await OnExecutingHttpClientListenersAsync(request);
                 var response = await PerformGetRequestAsync(request);
                 await CacheResultAsync(request, response, ContentType);
-                var result = await response.Content.ReadAsStringAsync();
+                var result = await ReadResultAsync<T>(response);
                 await OnExecutedHttpClientListenersAsync(request);
-
-                return DeserializeXml<T>(result);
+                return result;
             }
             catch (Exception exception)
             {
@@ -108,10 +120,9 @@ namespace Masasamjant.Http.Xml
                 AddHttpHeaders(request, httpClient.DefaultRequestHeaders);
                 await OnExecutingHttpClientListenersAsync(request);
                 var response = await PerformPostRequestAsync(request, xml);
-                var result = await response.Content.ReadAsStringAsync();
+                var result = await ReadResultAsync<TResult>(response);
                 await OnExecutedHttpClientListenersAsync(request);
-
-                return DeserializeXml<TResult>(result);
+                return result;
             }
             catch (Exception exception)
             {
@@ -161,6 +172,13 @@ namespace Masasamjant.Http.Xml
         protected override T? DeserializeCacheContentValue<T>(string? contentValue) where T : default
         {
             return DeserializeXml<T>(contentValue);
+        }
+
+        private async Task<TResult?> ReadResultAsync<TResult>(HttpResponseMessage response)
+        {
+            var result = await response.Content.ReadAsStringAsync();
+            var item = DeserializeXml<TResult>(result);
+            return item;
         }
 
         private async Task<HttpResponseMessage> PerformPostRequestAsync(HttpPostRequest request, string xml)

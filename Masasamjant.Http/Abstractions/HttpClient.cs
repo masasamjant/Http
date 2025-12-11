@@ -1,9 +1,7 @@
 ﻿using Masasamjant.Http.Caching;
 using Masasamjant.Http.Interceptors;
 using Masasamjant.Http.Listeners;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Mime;
 
 namespace Masasamjant.Http.Abstractions
 {

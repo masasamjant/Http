@@ -55,7 +55,6 @@ namespace Masasamjant.Http.Json
                 await CacheResultAsync(request, response, ContentType);
                 var result = await response.Content.ReadFromJsonAsync<T>();
                 await OnExecutedHttpClientListenersAsync(request);
-
                 return result;
             }
             catch (Exception exception)
@@ -97,7 +96,6 @@ namespace Masasamjant.Http.Json
                 var response = await PerformPostRequestAsync(request);
                 var result = await response.Content.ReadFromJsonAsync<TResult>();
                 await OnExecutedHttpClientListenersAsync(request);
-
                 return result;
             }
             catch (Exception exception)
