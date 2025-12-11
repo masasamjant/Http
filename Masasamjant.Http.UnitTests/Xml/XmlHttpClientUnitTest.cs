@@ -1,4 +1,5 @@
 ﻿using Masasamjant.Http.Abstractions;
+using Masasamjant.Http.Caching;
 using Masasamjant.Http.Stubs;
 using Masasamjant.Xml;
 using System.Runtime.Serialization;
@@ -209,6 +210,31 @@ namespace Masasamjant.Http.Xml
             Assert.AreEqual(data.Age, result.Age);
             handler.Exception = new InvalidOperationException("Testing");
             await Assert.ThrowsExceptionAsync<HttpRequestException>(() => client.PostAsync(request));
+        }
+
+        [TestMethod]
+        public async Task Test_GetAsync_Cache()
+        {
+            var data = GetContractData();
+            var xml = data.Serialize();
+            var handler = new HttpMessageHandlerStub(System.Net.HttpStatusCode.OK, xml, null, "application/xml");
+            var httpClientFactory = new HttpClientFactoryStub(handler);
+            var httpBaseAddressProvider = GetHttpBaseAddressProvider();
+            var httpCacheManager = new MemoryHttpCacheManager();
+            var client = new XmlHttpClient(httpClientFactory, httpBaseAddressProvider, httpCacheManager);
+            var caching = new HttpGetRequestCaching(true, TimeSpan.FromMinutes(2));
+            var request = new HttpGetRequest("/contract", caching);
+            Assert.IsTrue(request.Caching.CanCacheResult);
+            
+            var result = await client.GetAsync<ContractData>(request);
+            Assert.IsFalse(request.Caching.IsCacheResult);
+            Assert.IsNotNull(result);
+
+            request = new HttpGetRequest("/contract", caching);
+            result = await client.GetAsync<ContractData>(request);
+
+            Assert.IsTrue(request.Caching.IsCacheResult);
+            Assert.IsNotNull(result);
         }
 
         private static IHttpBaseAddressProvider GetHttpBaseAddressProvider()

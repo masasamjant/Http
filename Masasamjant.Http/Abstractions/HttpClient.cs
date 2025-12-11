@@ -192,7 +192,7 @@ namespace Masasamjant.Http.Abstractions
         /// <param name="contentType">The content type.</param>
         protected async Task CacheResultAsync(HttpGetRequest request, HttpResponseMessage response, string contentType)
         {
-            if (request.Caching.CanCacheResult)
+            if (!request.Caching.CanCacheResult)
                 return;
 
             using (var stream = new MemoryStream())
@@ -225,7 +225,7 @@ namespace Masasamjant.Http.Abstractions
         /// <returns>A tuple of indication is result was found from cache and the result.</returns>
         protected async Task<(bool Cached, T? Result)> TryGetCacheResultAsync<T>(HttpGetRequest request)
         {
-            if (request.Caching.CanCacheResult)
+            if (!request.Caching.CanCacheResult)
                 return (false, default);
           
             var cacheContent = await CacheManager.GetCacheContentAsync(request);
