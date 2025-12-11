@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Masasamjant HTTP</Title>
-    <Version>2.1.0</Version>
+    <Version>2.1.1</Version>
     <Description>Class library to make HTTP requests.</Description>
     <Copyright>2025 - Matti Jantti</Copyright>
     <PackageProjectUrl>https://github.com/masasamjant/Http</PackageProjectUrl>
@@ -32,8 +32,8 @@
 
   <ItemGroup>
     <PackageReference Include="Masasamjant.Framework" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
   </ItemGroup>
 
 </Project>
