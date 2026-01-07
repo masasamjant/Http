@@ -286,9 +286,6 @@ namespace Masasamjant.Http.Abstractions
 
         private static void PerformRequestInterceptionCancellation(HttpRequest request, HttpRequestInterception interception)
         {
-            if (!interception.CancelRequest)
-                throw new ArgumentException("The interception indicates that request should not be canceled.", nameof(interception));
-
             request.Cancel();
 
             if (interception.ThrowCancelException)

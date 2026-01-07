@@ -23,6 +23,20 @@
         }
 
         [TestMethod]
+        public async Task Test_Executing_Executed_No_Handler()
+        {
+            var listener = new HttpRequestExecutionTimeListener();
+            var request = new HttpGetRequest("api/Test");
+            TimeSpan? time = null;
+            HttpRequestKey? key = null;
+            await listener.OnExecutingAsync(request);
+            Thread.Sleep(1000);
+            await listener.OnExecutedAsync(request);
+            Assert.IsFalse(time.HasValue);
+            Assert.IsNull(key);
+        }
+
+        [TestMethod]
         public async Task Test_Executing_Error_Executed()
         {
             var listener = new HttpRequestExecutionTimeListener();

@@ -5,8 +5,12 @@ namespace Masasamjant.Http
 {
     internal class TestHttpClientBuilder : HttpClientBuilder
     {
-        public TestHttpClientBuilder(IConfiguration? configuration = null, IHttpClientFactory? httpClientFactory = null, IHttpBaseAddressProviderFactory? httpBaseAddressProviderFactory = null, IHttpCacheManager? httpCacheManager = null)
+        public TestHttpClientBuilder(IConfiguration? configuration, IHttpClientFactory? httpClientFactory, IHttpBaseAddressProviderFactory? httpBaseAddressProviderFactory, IHttpCacheManager? httpCacheManager)
             : base(configuration, httpClientFactory, httpBaseAddressProviderFactory, httpCacheManager)  
+        { }
+
+        public TestHttpClientBuilder()
+            : base()
         { }
 
         public new IHttpClientFactory HttpClientFactory => base.HttpClientFactory;

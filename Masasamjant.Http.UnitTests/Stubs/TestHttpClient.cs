@@ -44,5 +44,7 @@ namespace Masasamjant.Http
         {
             throw new NotImplementedException();
         }
+
+        public async Task<HttpRequestException> TestHandleRequestExceptionAsync(HttpRequest request, Exception exception, string message) => await HandleRequestExceptionAsync(request, exception, message);
     }
 }

@@ -47,5 +47,17 @@
             var value = provider.GetHttpBaseAdress();
             Assert.AreEqual("Value", value);
         }
+
+        [TestMethod]
+        public void Test_GetBaseAddressProvider_Fails()
+        {
+            var configuration = GetConfiguration(new Dictionary<string, string?>()
+            {
+                { "Section:Key", "Value" },
+            });
+            var factory = new ConfigurationHttpBaseAddressProviderFactory(configuration);
+            factory.ConfigurationKey = "";
+            Assert.ThrowsException<InvalidOperationException>(() => factory.GetBaseAddressProvider("Section"));
+        }
     }
 }

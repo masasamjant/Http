@@ -60,6 +60,24 @@ namespace Masasamjant.Http.Json
         }
 
         [TestMethod]
+        public async Task Test_PostAsync_No_Result_Cancel()
+        {
+            var data = GetJsonData();
+            var xml = data.Serialize();
+            var handler = new HttpMessageHandlerStub(System.Net.HttpStatusCode.OK, xml, null, "application/xmljson");
+            var httpClientFactory = new HttpClientFactoryStub(handler);
+            var httpBaseAddressProvider = GetHttpBaseAddressProvider();
+            var httpCacheManager = HttpCacheManager.Default;
+            var client = new JsonHttpClient(httpClientFactory, httpBaseAddressProvider, httpCacheManager);
+            client.HttpPostRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Cancel(HttpRequestInterceptionCancelBehavior.Return, "Test"), new List<string>()));
+            bool requestCanceled = false;
+            var request = new HttpPostRequest("/contract", data);
+            request.Canceled += (s, e) => { requestCanceled = true; };
+            await client.PostAsync(request);
+            Assert.IsTrue(requestCanceled);
+        }
+
+        [TestMethod]
         public async Task Test_GetAsync_Listener_Execution()
         {
             var data = GetJsonData();
@@ -178,6 +196,22 @@ namespace Masasamjant.Http.Json
             Assert.IsNotNull(result);
             Assert.AreEqual(data.Name, result.Name);
             Assert.AreEqual(data.Age, result.Age);
+            handler.Exception = new InvalidOperationException("Testing");
+            await Assert.ThrowsExceptionAsync<HttpRequestException>(() => client.PostAsync(request));
+        }
+
+        [TestMethod]
+        public async Task Test_PostAsync_No_Result()
+        {
+            var data = GetJsonData();
+            var json = data.Serialize();
+            var handler = new HttpMessageHandlerStub(System.Net.HttpStatusCode.OK, json, null, "application/json");
+            var httpClientFactory = new HttpClientFactoryStub(handler);
+            var httpBaseAddressProvider = GetHttpBaseAddressProvider();
+            var httpCacheManager = HttpCacheManager.Default;
+            var client = new JsonHttpClient(httpClientFactory, httpBaseAddressProvider, httpCacheManager);
+            var request = new HttpPostRequest("/contract", data);
+            await client.PostAsync(request);
             handler.Exception = new InvalidOperationException("Testing");
             await Assert.ThrowsExceptionAsync<HttpRequestException>(() => client.PostAsync(request));
         }

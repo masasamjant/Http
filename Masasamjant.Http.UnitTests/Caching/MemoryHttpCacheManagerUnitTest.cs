@@ -26,5 +26,15 @@
             content = await manager.GetCacheContentAsync(request1);
             Assert.IsNull(content);
         }
+
+        [TestMethod]
+        public async Task Test_GetCacheContentAsync_Not_Content()
+        {
+            var caching = new HttpGetRequestCaching(true, TimeSpan.FromMilliseconds(100));
+            var manager = new MemoryHttpCacheManager();
+            var request1 = new HttpGetRequest("Testing/Request/1", caching);
+            var content = await manager.GetCacheContentAsync(request1);
+            Assert.IsNull(content);
+        }
     }
 }

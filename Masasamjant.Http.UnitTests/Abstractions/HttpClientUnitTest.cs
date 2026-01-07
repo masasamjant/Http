@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Masasamjant.Http.Interceptors;
+using System.Text;
 
 namespace Masasamjant.Http.Abstractions
 {
@@ -62,6 +63,28 @@ namespace Masasamjant.Http.Abstractions
         }
 
         [TestMethod]
+        public async Task Test_Interceptor_Throw_Cancel_Exception()
+        {
+            var client = new TestHttpClient();
+            var lines = new List<string>();
+            client.HttpGetRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Cancel(HttpRequestInterceptionCancelBehavior.Throw, "Testing"), lines));
+            var request = new HttpGetRequest("api/Test");
+            var exception = await Assert.ThrowsExceptionAsync<HttpRequestInterceptionException>(() => client.TestIsCanceledByInterceptorsAsync(request));
+            Assert.AreEqual("Testing", exception.Message);
+        }
+
+        [TestMethod]
+        public async Task Test_Interceptor_Throw_Cancel_Exception_No_Reason()
+        {
+            var client = new TestHttpClient();
+            var lines = new List<string>();
+            client.HttpGetRequestInterceptors.Add(new TestHttpRequestInterceptor(HttpRequestInterception.Cancel(HttpRequestInterceptionCancelBehavior.Throw, null), lines));
+            var request = new HttpGetRequest("api/Test");
+            var exception = await Assert.ThrowsExceptionAsync<HttpRequestInterceptionException>(() => client.TestIsCanceledByInterceptorsAsync(request));
+            Assert.AreEqual("The specified HTTP request was intercepted.", exception.Message);
+        }
+
+        [TestMethod]
         public async Task Test_OnExecutingHttpClientListenersAsync()
         {
             var builder = new StringBuilder();
@@ -108,6 +131,23 @@ namespace Masasamjant.Http.Abstractions
             Assert.IsFalse(headers.GetValues("name").Contains("value"));
             Assert.IsTrue(headers.GetValues("name").Contains("name"));
             Assert.IsTrue(headers.GetValues("test").Contains("test"));
+        }
+
+        [TestMethod]
+        public async Task Test_HandleRequestExceptionAsync()
+        {
+            var request = new HttpGetRequest("api/Test");
+            Exception exception = new HttpRequestException(request, "Testing");
+            var client = new TestHttpClient();
+            Exception actual = await client.TestHandleRequestExceptionAsync(request, exception, "Resting");
+            Assert.AreSame(exception, actual);
+            exception = new InvalidOperationException("Testing");
+            actual = await client.TestHandleRequestExceptionAsync(request, exception, "Resting");
+            Assert.IsInstanceOfType<HttpRequestException>(actual);
+            HttpRequestException ex = (HttpRequestException)actual;
+            Assert.AreSame(request, ex.HttpRequest);
+            Assert.AreEqual("Resting", ex.Message);
+            Assert.AreSame(ex.InnerException, exception);
         }
     }
 }
