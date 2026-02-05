@@ -24,6 +24,8 @@
             Assert.IsTrue(parameter.GetHashCode() == other.GetHashCode());
             other = new HttpParameter("test", "value");
             Assert.IsFalse(parameter.Equals(other));
+            Assert.IsFalse(parameter.Equals(null));
+            Assert.IsFalse(parameter.Equals(DateTime.Now));
         }
 
         [TestMethod]
@@ -31,6 +33,12 @@
         {
             var parameter = new HttpParameter("name", "value");
             var clone = parameter.Clone();
+            Assert.AreEqual(parameter, clone);
+            Assert.AreEqual(parameter.Value, clone.Value);
+            object copy = ((ICloneable)parameter).Clone();
+            Assert.IsInstanceOfType<HttpParameter>(copy);
+            Assert.IsFalse(ReferenceEquals(parameter, copy));
+            clone = (HttpParameter)copy;
             Assert.AreEqual(parameter, clone);
             Assert.AreEqual(parameter.Value, clone.Value);
         }

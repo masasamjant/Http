@@ -7,7 +7,7 @@ namespace Masasamjant.Http.Xml
     /// <summary>
     /// Represents component to build instance of <see cref="XmlHttpClient"/> class.
     /// </summary>
-    public sealed class XmlHttpClientBuilder : HttpClientBuilder
+    public class XmlHttpClientBuilder : HttpClientBuilder
     {
         /// <summary>
         /// Initializes new instance of the <see cref="XmlHttpClientBuilder"/> class.
@@ -25,7 +25,7 @@ namespace Masasamjant.Http.Xml
         /// </summary>
         /// <param name="clientPurpose">The purpose of the HTTP client.</param>
         /// <returns>A <see cref="XmlHttpClient"/>.</returns>
-        protected override IHttpClient CreateClient(string clientPurpose)
+        protected sealed override IHttpClient CreateClient(string clientPurpose)
         {
             var baseAddressProvider = HttpBaseAddressProviderFactory.GetBaseAddressProvider(clientPurpose);
             var client = new XmlHttpClient(HttpClientFactory, baseAddressProvider, CacheManager);
@@ -38,7 +38,7 @@ namespace Masasamjant.Http.Xml
         /// </summary>
         /// <param name="client">The <see cref="IHttpClient"/> obtained from <see cref="CreateClient(string)"/>.</param>
         /// <param name="clientPurpose">The purpose of the HTTP client.</param>
-        protected override void ConfigureClient(IHttpClient client, string clientPurpose)
+        protected sealed override void ConfigureClient(IHttpClient client, string clientPurpose)
         {
             if (client is XmlHttpClient xmlHttpClient)
             {

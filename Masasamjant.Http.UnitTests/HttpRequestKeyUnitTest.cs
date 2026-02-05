@@ -26,6 +26,12 @@
             request.Parameters.Add("2", "2");
             other = new HttpRequestKey(request);
             Assert.IsFalse(key.Equals(other));
+            Assert.IsFalse(key.Equals(null));
+            Assert.IsFalse(key.Equals(DateTime.Now));
+            other = new HttpRequestKey(new HttpPostRequest("test/Api", 1));
+            Assert.IsFalse(key.Equals(other));
+            other = new HttpRequestKey(new HttpGetRequest("test/Api", parameters));
+            Assert.IsFalse(key.Equals(other));
         }
     }
 }

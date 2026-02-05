@@ -1,4 +1,5 @@
 ﻿using Masasamjant.Http.Abstractions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Masasamjant.Http.Caching
 {
@@ -44,23 +45,6 @@ namespace Masasamjant.Http.Caching
             return Task.CompletedTask;
         }
 
-        private Dictionary<string, HttpCacheContent> GetOrAddCacheContent(string uri)
-        {
-            if (!contentsLookup.TryGetValue(uri, out var contents))
-            {
-                contents = new Dictionary<string, HttpCacheContent>();
-                contentsLookup.Add(uri, contents);
-            }
-
-            return contents;
-        }
-
-        private void AddContentKey(string contentKey, TimeSpan duration)
-        {
-            DateTimeOffset expires = DateTimeOffset.UtcNow.Add(duration);
-            keys.Add(contentKey, expires);
-        }
-
         /// <summary>
         /// Gets cached content.
         /// </summary>
@@ -78,21 +62,56 @@ namespace Masasamjant.Http.Caching
 
                 if (keys.TryGetValue(contentKey, out var expires))
                     content = GetHttpCacheContent(uri, contentKey, expires);
-                else
-                    RemoveContentsLookup(uri, contentKey);
             }
 
             return Task.FromResult(content);
         }
 
+        /// <summary>
+        /// Removes cached content.
+        /// </summary>
+        /// <param name="request">The HTTP request.</param>
+        /// <returns>A task.</returns>
+        public override Task RemoveCacheContentAsync(HttpGetRequest request)
+        {
+            var contentKey = GetContentKey(request);
+            var uri = request.RequestUri;
+
+            lock (cacheLock)
+            {
+                if (TryGetCacheContent(uri, contentKey, out var contents, out var content))
+                { 
+                    RemoveCachedContent(contents, contentKey);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private Dictionary<string, HttpCacheContent> GetOrAddCacheContent(string uri)
+        {
+            if (!contentsLookup.TryGetValue(uri, out var contents))
+            {
+                contents = new Dictionary<string, HttpCacheContent>();
+                contentsLookup.Add(uri, contents);
+            }
+
+            return contents;
+        }
+
+        private void AddContentKey(string contentKey, TimeSpan duration)
+        {
+            DateTimeOffset expires = DateTimeOffset.UtcNow.Add(duration);
+            keys.Add(contentKey, expires);
+        }
+
         private HttpCacheContent? GetHttpCacheContent(string uri, string contentKey, DateTimeOffset expires)
         {
-            if (contentsLookup.TryGetValue(uri, out var contents) &&
-                contents.TryGetValue(contentKey, out var content))
+            if (TryGetCacheContent(uri, contentKey, out var contents, out var content))
             {
                 if (IsExpired(expires))
                 {
-                    RemoveExpiredContent(contents, contentKey);
+                    RemoveCachedContent(contents, contentKey);
                     return null;
                 }
                 else
@@ -102,19 +121,25 @@ namespace Masasamjant.Http.Caching
             return null;
         }
 
+        private bool TryGetCacheContent(string uri, string contentKey, [NotNullWhen(true)] out Dictionary<string, HttpCacheContent>? contents, [NotNullWhen(true)] out HttpCacheContent? content)
+        {
+            if (contentsLookup.TryGetValue(uri, out contents) &&
+                contents.TryGetValue(contentKey, out content))
+                return true;
+
+            contents = null;
+            content = null;
+            return false;
+        }
+
         private static bool IsExpired(DateTimeOffset expires)
             => expires < DateTimeOffset.UtcNow;
 
-        private void RemoveExpiredContent(Dictionary<string, HttpCacheContent> contents, string contentKey)
+        private void RemoveCachedContent(Dictionary<string, HttpCacheContent> contents, string contentKey)
         {
             keys.Remove(contentKey);
             contents.Remove(contentKey);
-        }
-
-        private void RemoveContentsLookup(string uri, string contentKey)
-        {
-            if (contentsLookup.TryGetValue(uri, out var contents))
-                contents.Remove(contentKey);
+            contentsLookup.Remove(contentKey);
         }
     }
 }

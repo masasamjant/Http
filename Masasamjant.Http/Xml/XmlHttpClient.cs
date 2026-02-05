@@ -9,7 +9,7 @@ namespace Masasamjant.Http.Xml
     /// <summary>
     /// Represents HTTP client that accepts XML data.
     /// </summary>
-    public sealed class XmlHttpClient : HttpClient
+    public class XmlHttpClient : HttpClient
     {
         private readonly System.Net.Http.HttpClient httpClient;
         private const string ContentType = "application/xml";
@@ -55,7 +55,7 @@ namespace Masasamjant.Http.Xml
         /// <param name="request">The <see cref="HttpGetRequest"/> to perform.</param>
         /// <returns>A <typeparamref name="T"/> result of request or default.</returns>
         /// <exception cref="HttpRequestException">If exception occurs when executing request.</exception>
-        public override async Task<T?> GetAsync<T>(HttpGetRequest request) where T : default
+        public override sealed async Task<T?> GetAsync<T>(HttpGetRequest request) where T : default
         {
             try
             {
@@ -90,7 +90,7 @@ namespace Masasamjant.Http.Xml
         /// <param name="request">The <see cref="HttpPostRequest{T}"/> to perform.</param>
         /// <returns>A <typeparamref name="T"/> result of request or default.</returns>
         /// <exception cref="HttpRequestException">If exception occurs when executing request.</exception>
-        public override Task<T?> PostAsync<T>(HttpPostRequest<T> request) where T : default
+        public override sealed Task<T?> PostAsync<T>(HttpPostRequest<T> request) where T : default
         {
             return PostAsync<T, T>(request);
         }
@@ -103,7 +103,7 @@ namespace Masasamjant.Http.Xml
         /// <param name="request">The <see cref="HttpPostRequest{T}"/> to perform.</param>
         /// <returns>A <typeparamref name="TResult"/> result of request or default.</returns>
         /// <exception cref="HttpRequestException">If exception occurs when executing request.</exception>
-        public override async Task<TResult?> PostAsync<TResult, T>(HttpPostRequest<T> request) where TResult : default
+        public override sealed async Task<TResult?> PostAsync<TResult, T>(HttpPostRequest<T> request) where TResult : default
         {
             try
             {
@@ -136,7 +136,7 @@ namespace Masasamjant.Http.Xml
         /// <param name="request">The <see cref="HttpPostRequest"/> to perform.</param>
         /// <returns>A <see cref="Task"/>.</returns>
         /// <exception cref="HttpRequestException">If exception occurs when executing request.</exception>
-        public override async Task PostAsync(HttpPostRequest request)
+        public override sealed async Task PostAsync(HttpPostRequest request)
         {
             try
             {
@@ -174,6 +174,27 @@ namespace Masasamjant.Http.Xml
             return DeserializeXml<T>(contentValue);
         }
 
+        protected virtual T? DeserializeXml<T>(string? xml)
+        {
+            if (string.IsNullOrWhiteSpace(xml))
+                return default;
+
+            var document = new XmlDocument();
+            document.LoadXml(xml);
+
+            var factory = new XmlSerializerFactory(XmlSerialization);
+            var serializer = factory.CreateSerializer(typeof(T));
+            return serializer.Deserialize<T>(document);
+        }
+
+        protected virtual string? SerializeXml(object instance)
+        {
+            var factory = new XmlSerializerFactory(XmlSerialization);
+            var serializer = factory.CreateSerializer(instance.GetType());
+            var xml = serializer.Serialize(instance);
+            return xml;
+        }
+
         private async Task<TResult?> ReadResultAsync<TResult>(HttpResponseMessage response)
         {
             var result = await response.Content.ReadAsStringAsync();
@@ -191,27 +212,6 @@ namespace Masasamjant.Http.Xml
         {
             var response = await httpClient.GetAsync(request.FullRequestUri, request.CancellationToken);
             return response.EnsureSuccessStatusCode();
-        }
-
-        private T? DeserializeXml<T>(string? xml)
-        {
-            if (string.IsNullOrWhiteSpace(xml))
-                return default;
-
-            var document = new XmlDocument();
-            document.LoadXml(xml);
-
-            var factory = new XmlSerializerFactory(XmlSerialization);
-            var serializer = factory.CreateSerializer(typeof(T));
-            return serializer.Deserialize<T>(document);
-        }
-
-        private string? SerializeXml(object instance)
-        {
-            var factory = new XmlSerializerFactory(XmlSerialization);
-            var serializer = factory.CreateSerializer(instance.GetType());
-            var xml = serializer.Serialize(instance);
-            return xml;
         }
     }
 }

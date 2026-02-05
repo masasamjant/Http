@@ -15,6 +15,11 @@ namespace Masasamjant.Http
             throw new NotImplementedException();
         }
 
+        public override Task RemoveCacheContentAsync(HttpGetRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
         public string TestGetContentKey(HttpGetRequest request) => GetContentKey(request);
     }
 }

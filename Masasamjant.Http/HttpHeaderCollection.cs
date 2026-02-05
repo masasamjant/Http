@@ -18,6 +18,18 @@ namespace Masasamjant.Http
         }
 
         /// <summary>
+        /// Initializes new instance of the <see cref="HttpHeaderCollection"/> class and includes
+        /// headers from other collection.
+        /// </summary>
+        /// <param name="other">The other HTTP header collection.</param>
+        public HttpHeaderCollection(HttpHeaderCollection other)
+            : this()
+        {
+            foreach (var header in other)
+                headers.Add(header);
+        }
+
+        /// <summary>
         /// Gets the count of headers.
         /// </summary>
         public int Count => headers.Count;
@@ -39,8 +51,13 @@ namespace Masasamjant.Http
         /// <param name="name">The header name.</param>
         /// <param name="value">The header value.</param>
         /// <returns>A added <see cref="HttpHeader"/>.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="name"/> is empty or contains only white-space characters.</exception>
-        /// <exception cref="ArgumentException">If collection already contains header with same name.</exception>
+        /// <exception cref="ArgumentNullException">If value of <paramref name="name"/> is empty or contains only white-space characters.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If value of <paramref name="name"/> is too long for HTTP header name.</exception>
+        /// <exception cref="ArgumentException">
+        /// If value of <paramref name="name"/> contains character that is invalid in HTTP header name.
+        /// -or-
+        /// If collection already contains header with same name.
+        /// </exception>
         public HttpHeader Add(string name, string? value)
         {
             var header = new HttpHeader(name, value);

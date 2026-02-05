@@ -33,5 +33,13 @@
             var content = await manager.GetCacheContentAsync(request);
             Assert.IsNull(content);
         }
+
+        [TestMethod]
+        public async Task Test_RemoveCacheContentAsync()
+        {
+            var manager = HttpCacheManager.Default;
+            var request = new HttpGetRequest("api/Test", [HttpParameter.From("name", "value")]);
+            await manager.RemoveCacheContentAsync(request);
+        }
     }
 }

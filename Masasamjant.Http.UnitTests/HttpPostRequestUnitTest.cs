@@ -1,4 +1,6 @@
-﻿namespace Masasamjant.Http
+﻿using Masasamjant.Collections;
+
+namespace Masasamjant.Http
 {
     [TestClass]
     public class HttpPostRequestUnitTest : UnitTest
@@ -25,6 +27,12 @@
             Assert.IsTrue(ReferenceEquals(clone1.Data, request1.Data));
             Assert.AreEqual(clone1.Data, request1.Data);
             Assert.AreEqual(clone1.GetFullRequestUri(), request1.GetFullRequestUri());
+            object copy = ((ICloneable)request1).Clone();
+            Assert.IsInstanceOfType<HttpPostRequest>(copy);
+            request1 = (HttpPostRequest)copy;
+            Assert.IsTrue(ReferenceEquals(clone1.Data, request1.Data));
+            Assert.AreEqual(clone1.Data, request1.Data);
+            Assert.AreEqual(clone1.GetFullRequestUri(), request1.GetFullRequestUri());
 
             request1 = new HttpPostRequest("api/Test", new CloneablePostData("test"));
             clone1 = request1.Clone();
@@ -40,6 +48,13 @@
 
             var request3 = new HttpPostRequest<CloneablePostData>("api/Test", new CloneablePostData("test"));
             var clone3 = request3.Clone();
+            Assert.IsFalse(ReferenceEquals(clone3.Data, request3.Data));
+            Assert.AreEqual(clone3.Data, request3.Data);
+            Assert.AreEqual(clone3.GetFullRequestUri(), request3.GetFullRequestUri());
+
+            copy = ((ICloneable)request3).Clone();
+            Assert.IsInstanceOfType<HttpPostRequest<CloneablePostData>>(copy);
+            clone3 = (HttpPostRequest<CloneablePostData>)copy;
             Assert.IsFalse(ReferenceEquals(clone3.Data, request3.Data));
             Assert.AreEqual(clone3.Data, request3.Data);
             Assert.AreEqual(clone3.GetFullRequestUri(), request3.GetFullRequestUri());

@@ -22,5 +22,12 @@ namespace Masasamjant.Http.Abstractions
         /// <param name="request">The HTTP request.</param>
         /// <returns>A <see cref="HttpCacheContent"/> or <c>null</c>.</returns>
         Task<HttpCacheContent?> GetCacheContentAsync(HttpGetRequest request);
+
+        /// <summary>
+        /// Removes cached content.
+        /// </summary>
+        /// <param name="request">The HTTP request.</param>
+        /// <returns>A task.</returns>
+        Task RemoveCacheContentAsync(HttpGetRequest request);
     }
 }

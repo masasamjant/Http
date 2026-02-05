@@ -9,7 +9,7 @@ namespace Masasamjant.Http.Json
     /// <summary>
     /// Represents HTTP client that accepts JSON data.
     /// </summary>
-    public sealed class JsonHttpClient : HttpClient
+    public class JsonHttpClient : HttpClient
     {
         private readonly System.Net.Http.HttpClient httpClient;
         private const string ContentType = "application/json";
@@ -36,7 +36,7 @@ namespace Masasamjant.Http.Json
         /// <param name="request">The <see cref="HttpGetRequest"/> to perform.</param>
         /// <returns>A <typeparamref name="T"/> result of request or default.</returns>
         /// <exception cref="HttpRequestException">If exception occurs when executing request.</exception>
-        public override async Task<T?> GetAsync<T>(HttpGetRequest request) where T : default
+        public override sealed async Task<T?> GetAsync<T>(HttpGetRequest request) where T : default
         {
             try
             {
@@ -70,7 +70,7 @@ namespace Masasamjant.Http.Json
         /// <param name="request">The <see cref="HttpPostRequest{T}"/> to perform.</param>
         /// <returns>A <typeparamref name="T"/> result of request or default.</returns>
         /// <exception cref="HttpRequestException">If exception occurs when executing request.</exception>
-        public override Task<T?> PostAsync<T>(HttpPostRequest<T> request) where T : default
+        public override sealed Task<T?> PostAsync<T>(HttpPostRequest<T> request) where T : default
         {
             return PostAsync<T, T>(request);
         }
@@ -83,7 +83,7 @@ namespace Masasamjant.Http.Json
         /// <param name="request">The <see cref="HttpPostRequest{T}"/> to perform.</param>
         /// <returns>A <typeparamref name="TResult"/> result of request or default.</returns>
         /// <exception cref="HttpRequestException">If exception occurs when executing request.</exception>
-        public override async Task<TResult?> PostAsync<TResult, T>(HttpPostRequest<T> request) where TResult : default
+        public override sealed async Task<TResult?> PostAsync<TResult, T>(HttpPostRequest<T> request) where TResult : default
         {
             try
             {
@@ -110,7 +110,7 @@ namespace Masasamjant.Http.Json
         /// <param name="request">The <see cref="HttpPostRequest"/> to perform.</param>
         /// <returns>A <see cref="Task"/>.</returns>
         /// <exception cref="HttpRequestException">If exception occurs when executing request.</exception>
-        public override async Task PostAsync(HttpPostRequest request)
+        public override sealed async Task PostAsync(HttpPostRequest request)
         {
             try
             {

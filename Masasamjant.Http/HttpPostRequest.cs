@@ -46,7 +46,7 @@ namespace Masasamjant.Http
     /// Represents HTTP Post request.
     /// </summary>
     /// <typeparam name="T">The type of the post data.</typeparam>
-    public sealed class HttpPostRequest<T> : HttpPostRequest where T : notnull 
+    public sealed class HttpPostRequest<T> : HttpPostRequest, ICloneable where T : notnull 
     {
         /// <summary>
         /// Initializes new instance of the <see cref="HttpPostRequest"/> class.
@@ -76,6 +76,11 @@ namespace Masasamjant.Http
             var request = new HttpPostRequest<T>(RequestUri, data);
             CloneHeadersTo(request);
             return request;
+        }
+
+        object ICloneable.Clone()
+        {
+            return this.Clone();
         }
     }
 }

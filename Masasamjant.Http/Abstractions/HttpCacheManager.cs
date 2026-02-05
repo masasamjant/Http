@@ -31,6 +31,13 @@ namespace Masasamjant.Http.Abstractions
         public abstract Task<HttpCacheContent?> GetCacheContentAsync(HttpGetRequest request);
 
         /// <summary>
+        /// Removes cached content.
+        /// </summary>
+        /// <param name="request">The HTTP request.</param>
+        /// <returns>A task.</returns>
+        public abstract Task RemoveCacheContentAsync(HttpGetRequest request);
+
+        /// <summary>
         /// Gets cache content key for specified HTTP request.
         /// </summary>
         /// <param name="request">The HTTP request.</param>
@@ -52,6 +59,11 @@ namespace Masasamjant.Http.Abstractions
             public override Task<HttpCacheContent?> GetCacheContentAsync(HttpGetRequest request)
             {
                 return Task.FromResult<HttpCacheContent?>(null);
+            }
+
+            public override Task RemoveCacheContentAsync(HttpGetRequest request)
+            {
+                return Task.CompletedTask;
             }
         }
     }

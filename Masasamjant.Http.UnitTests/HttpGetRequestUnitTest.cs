@@ -35,7 +35,7 @@ namespace Masasamjant.Http
         public void Test_Clone()
         {
             var parameters = new[]
-{
+            {
                 HttpParameter.From("1", "1"),
                 HttpParameter.From("2", "2"),
             };
@@ -58,6 +58,21 @@ namespace Masasamjant.Http
             Assert.IsFalse(ReferenceEquals(request.Caching, clone.Caching));
             Assert.AreEqual(request.Caching.CanCacheResult, clone.Caching.CanCacheResult);
             Assert.AreEqual(request.Caching.CacheDuration, clone.Caching.CacheDuration);
+
+            object copy = ((ICloneable)request).Clone();
+            Assert.IsInstanceOfType<HttpGetRequest>(copy);
+            Assert.IsFalse(ReferenceEquals(request, copy));
+            HttpGetRequest other = (HttpGetRequest)copy;
+            Assert.AreEqual(request.GetFullRequestUri(), other.FullRequestUri);
+            Assert.AreEqual(request.Headers.Count, other.Headers.Count);
+            foreach (var header in request.Headers)
+                Assert.IsTrue(other.Headers.Contains(header) && other.Headers.Get(header.Name)!.Value == header.Value);
+            Assert.AreEqual(request.Parameters.Count, other.Parameters.Count);
+            foreach (var parameter in request.Parameters)
+                Assert.IsTrue(other.Parameters.Contains(parameter) && other.Parameters.Get(parameter.Name)!.Value == parameter.Value);
+            Assert.IsFalse(ReferenceEquals(request.Caching, other.Caching));
+            Assert.AreEqual(request.Caching.CanCacheResult, other.Caching.CanCacheResult);
+            Assert.AreEqual(request.Caching.CacheDuration, other.Caching.CacheDuration);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Masasamjant.Http
+﻿using System.Collections;
+
+namespace Masasamjant.Http
 {
     [TestClass]
     public class HttpParameterCollectionUnitTest : UnitTest
@@ -8,6 +10,11 @@
         {
             var parameters = new HttpParameterCollection();
             Assert.IsTrue(parameters.Count == 0);
+            var other = new HttpParameterCollection();
+            var p = other.Add("name", 1);
+            parameters = new HttpParameterCollection(other);
+            Assert.IsTrue(parameters.Count == 1);
+            Assert.IsTrue(parameters.Contains(p));
         }
 
         [TestMethod]
@@ -67,11 +74,13 @@
             object instance = new Pet() 
             {
                 Name = "Wolf",
-                Age = 10
+                Age = 10,
+                Owner = "Jack"
             };
             var parameters = HttpParameterCollection.Create(instance);
             var nameParameter = parameters.FirstOrDefault(x => x.Name == "name");
             var ageParameter = parameters.FirstOrDefault(x => x.Name == "age");
+            Assert.IsTrue(parameters.Count == 2);
             Assert.IsTrue(nameParameter != null && nameParameter.Value!.Equals("Wolf"));
             Assert.IsTrue(ageParameter != null && ageParameter.Value!.Equals(10));
         }
@@ -87,6 +96,22 @@
             Assert.IsNotNull(parameter);
         }
 
+        [TestMethod]
+        public void Test_IsReadOnly()
+        {
+            ICollection<HttpParameter> collection = new HttpParameterCollection();
+            Assert.IsFalse(collection.IsReadOnly);
+        }
+
+        [TestMethod]
+        public void Test_GetEnumerator()
+        {
+            var collection = new HttpParameterCollection();
+            IEnumerator enumerator1 = ((IEnumerable)collection).GetEnumerator();
+            IEnumerator<HttpParameter> enumerator2 = collection.GetEnumerator();
+            Assert.AreEqual(enumerator1.GetType(), enumerator2.GetType());
+        }
+
         private class Pet
         {
             [HttpParameter("name")]
@@ -94,6 +119,8 @@
 
             [HttpParameter("age")]
             public int Age { get; set; }
+
+            public string? Owner { get; set; }
         }
     }
 }

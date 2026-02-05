@@ -1,4 +1,6 @@
-﻿namespace Masasamjant.Http
+﻿using System.Collections;
+
+namespace Masasamjant.Http
 {
     [TestClass]
     public class HttpHeaderCollectionUnitTest : UnitTest
@@ -8,6 +10,12 @@
         {
             var headers = new HttpHeaderCollection();
             Assert.IsTrue(headers.Count == 0);
+
+            var other = new HttpHeaderCollection();
+            var h1 = other.Add("1", "1");
+            headers = new HttpHeaderCollection(other);
+            Assert.IsTrue(headers.Count == 1);
+            Assert.IsTrue(headers.Contains(h1));
         }
 
         [TestMethod]
@@ -70,6 +78,35 @@
             Assert.IsFalse(headers.Remove(header));
             headers.Add("name", "foo");
             Assert.IsTrue(headers.Remove(header));
+        }
+
+        [TestMethod]
+        public void Test_IsReadOnly()
+        {
+            ICollection<HttpHeader> collection = new HttpHeaderCollection();
+            Assert.IsFalse(collection.IsReadOnly);
+        }
+
+        [TestMethod]
+        public void Test_CopyTo()
+        {
+            var other = new HttpHeaderCollection();
+            var header1 = other.Add("Key1", "1");
+            var header2 = other.Add("Key2", "2");
+            ICollection<HttpHeader> collection = new HttpHeaderCollection(other);
+            HttpHeader[] expected = new HttpHeader[] { header1, header2 };
+            HttpHeader[] array = new HttpHeader[2];
+            collection.CopyTo(array, 0);
+            CollectionAssert.AreEqual(expected, array);
+        }
+
+        [TestMethod]
+        public void Test_GetEnumerator()
+        {
+            var collection = new HttpHeaderCollection();
+            IEnumerator enumerator1 = ((IEnumerable)collection).GetEnumerator();
+            IEnumerator<HttpHeader> enumerator2 = collection.GetEnumerator();
+            Assert.AreEqual(enumerator1.GetType(), enumerator2.GetType());
         }
     }
 }

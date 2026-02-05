@@ -18,6 +18,19 @@ namespace Masasamjant.Http
             parameters = new HashSet<HttpParameter>();
         }
 
+
+        /// <summary>
+        /// Initializes new instance of the <see cref="HttpParameterCollection"/> class and includes
+        /// parameters from other collection.
+        /// </summary>
+        /// <param name="other">The other HTTP parameter collection.</param>
+        public HttpParameterCollection(HttpParameterCollection other)
+            : this()
+        {
+            foreach (var parameter in other)
+                parameters.Add(parameter);
+        }
+
         /// <summary>
         /// Gets count of parameters in collection.
         /// </summary>

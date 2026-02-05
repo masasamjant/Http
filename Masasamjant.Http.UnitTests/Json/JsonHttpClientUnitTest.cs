@@ -216,6 +216,25 @@ namespace Masasamjant.Http.Json
             await Assert.ThrowsExceptionAsync<HttpRequestException>(() => client.PostAsync(request));
         }
 
+        [TestMethod]
+        public void Test_DeserializeCacheContentValue()
+        {
+            var data = GetJsonData();
+            var json = data.Serialize();
+            var handler = new HttpMessageHandlerStub(System.Net.HttpStatusCode.OK, json, null, "application/json");
+            var httpClientFactory = new HttpClientFactoryStub(handler);
+            var httpBaseAddressProvider = GetHttpBaseAddressProvider();
+            var httpCacheManager = HttpCacheManager.Default;
+            var client = new TestJsonHttpClient(httpClientFactory, httpBaseAddressProvider, httpCacheManager);
+            var result = client.TestDeserializeCacheContentValue<JsonData>(json);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(data.Name, result!.Name);
+            Assert.AreEqual(data.Age, result.Age);
+            
+            result = client.TestDeserializeCacheContentValue<JsonData>(null);
+            Assert.IsNull(result);
+        }
+
         private static IHttpBaseAddressProvider GetHttpBaseAddressProvider()
         {
             var factory = new BasicHttpBaseAddressProviderFactory(new Dictionary<string, string>
@@ -233,6 +252,18 @@ namespace Masasamjant.Http.Json
                 Name = "Mike",
                 Age = 10
             };
+        }
+
+        private class TestJsonHttpClient : JsonHttpClient
+        {
+            public TestJsonHttpClient(IHttpClientFactory httpClientFactory, IHttpBaseAddressProvider httpBaseAddressProvider, IHttpCacheManager httpCacheManager)
+                : base(httpClientFactory, httpBaseAddressProvider, httpCacheManager)
+            { }
+
+            public T? TestDeserializeCacheContentValue<T>(string? contentValue)
+            {
+                return DeserializeCacheContentValue<T>(contentValue);
+            }
         }
     }
 

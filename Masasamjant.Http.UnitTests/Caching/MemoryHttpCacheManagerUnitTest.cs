@@ -36,5 +36,23 @@
             var content = await manager.GetCacheContentAsync(request1);
             Assert.IsNull(content);
         }
+
+        [TestMethod]
+        public async Task Test_RemoveCacheContentAsync()
+        {
+            var caching = new HttpGetRequestCaching(true, TimeSpan.FromMilliseconds(100));
+            var manager = new MemoryHttpCacheManager();
+            var request1 = new HttpGetRequest("Testing/Request/1", caching);
+            await manager.RemoveCacheContentAsync(request1);
+
+            await manager.AddCacheContentAsync(request1, "Testing", "string", TimeSpan.FromMilliseconds(100));
+            var content = await manager.GetCacheContentAsync(request1);
+            Assert.IsNotNull(content);
+
+            await manager.RemoveCacheContentAsync(request1);
+
+            content = await manager.GetCacheContentAsync(request1);
+            Assert.IsNull(content);
+        }
     }
 }

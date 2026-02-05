@@ -10,12 +10,17 @@
         /// </summary>
         /// <param name="name">The header name.</param>
         /// <param name="value">The header value.</param>
-        /// <exception cref="ArgumentNullException">If <paramref name="name"/> is empty or contains only white-space characters.</exception>
+        /// <exception cref="ArgumentNullException">If value of <paramref name="name"/> is empty or only whitespace.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If value of <paramref name="name"/> is too long.</exception>
+        /// <exception cref="ArgumentException">
+        /// If value of <paramref name="name"/> contains character that is invalid in HTTP header name.
+        /// -or-
+        /// If value of <paramref name="value"/> contains character that is invalid in HTTP header value.
+        /// </exception>
         public HttpHeader(string name, string? value)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name), "The name cannot be empty or contain only white-space characters.");
-
+            HttpHeaderValidator.ValidateHeaderName(name);
+            HttpHeaderValidator.ValidateHeaderValue(value);
             Name = name;
             Value = value;
         }
@@ -70,7 +75,7 @@
 
         object ICloneable.Clone()
         {
-            throw new NotImplementedException();
+            return this.Clone();
         }
     }
 }

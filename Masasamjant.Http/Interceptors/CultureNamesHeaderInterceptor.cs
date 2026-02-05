@@ -6,13 +6,16 @@ namespace Masasamjant.Http.Interceptors
     /// <summary>
     /// Represents <see cref="HttpRequestInterceptor"/> that adds names of <see cref="CultureInfo.CurrentCulture"/> and <see cref="CultureInfo.CurrentUICulture"/> into HTTP headers.
     /// </summary>
-    public sealed class CultureNamesHeaderInterceptor : HttpRequestInterceptor
+    public sealed class CultureNamesHeaderInterceptor : HttpHeaderRequestInterceptor
     {
         /// <summary>
         /// Initializes new instance of the <see cref="CultureNamesHeaderInterceptor"/> class.
         /// </summary>
         /// <param name="currentCultureHeaderName">The name of current culture HTTP header.</param>
         /// <param name="currentUICultureHeaderName">The name of current UI culture HTTP header.</param>
+        /// <exception cref="ArgumentException">If value of <paramref name="currentCultureHeaderName"/> or <paramref name="currentUICultureHeaderName"/> contains invalid character for HTTP header name.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">If value of <paramref name="currentCultureHeaderName"/> or <paramref name="currentUICultureHeaderName"/> is too long.</exception>
         /// <remarks>
         /// If <paramref name="currentCultureHeaderName"/> is <c>null</c>, empty or only whitespace, then name of <see cref="CultureInfo.CurrentCulture"/> is not added.
         /// If <paramref name="currentUICultureHeaderName"/> is <c>null</c>, empty or only whitespace, then name of <see cref="CultureInfo.CurrentUICulture"/> is not added.
@@ -20,6 +23,10 @@ namespace Masasamjant.Http.Interceptors
         /// </remarks>
         public CultureNamesHeaderInterceptor(string? currentCultureHeaderName, string? currentUICultureHeaderName)
         {
+            if (!string.IsNullOrWhiteSpace(currentCultureHeaderName))
+                HttpHeaderValidator.ValidateHeaderName(currentCultureHeaderName);
+            if (!string.IsNullOrWhiteSpace(currentUICultureHeaderName))
+                HttpHeaderValidator.ValidateHeaderName(currentUICultureHeaderName);
             CurrentCultureHeaderName = currentCultureHeaderName;
             CurrentUICultureHeaderName = currentUICultureHeaderName;
         }
@@ -56,22 +63,24 @@ namespace Masasamjant.Http.Interceptors
 
         private HttpRequestInterception AddCultureNameHeaders(HttpRequest request)
         {
-            AddCurrentCultureNameHeader(request);
-            AddCurrentUICultureNameHeader(request);
-            return HttpRequestInterception.Continue;
+            var interception = AddCurrentCultureNameHeader(request);
+            if (interception.Result != HttpRequestInterceptionResult.Continue)
+                return interception;
+            return AddCurrentUICultureNameHeader(request);
         }
 
-        private void AddCurrentCultureNameHeader(HttpRequest request)
+        private HttpRequestInterception AddCurrentCultureNameHeader(HttpRequest request)
         {
-            if (!string.IsNullOrWhiteSpace(CurrentCultureHeaderName))
-                request.Headers.Add(CurrentCultureHeaderName, CultureInfo.CurrentCulture.Name);
+            return AddHttpHeader(request, CurrentCultureHeaderName, CultureInfo.CurrentCulture.Name);
         }
 
-        private void AddCurrentUICultureNameHeader(HttpRequest request)
+        private HttpRequestInterception AddCurrentUICultureNameHeader(HttpRequest request)
         {
             if (!string.IsNullOrWhiteSpace(CurrentUICultureHeaderName) &&
                 !string.Equals(CurrentUICultureHeaderName, CurrentCultureHeaderName, StringComparison.Ordinal))
-                request.Headers.Add(CurrentUICultureHeaderName, CultureInfo.CurrentUICulture.Name);
+                return AddHttpHeader(request, CurrentUICultureHeaderName, CultureInfo.CurrentUICulture.Name);
+        
+            return HttpRequestInterception.Continue;
         }
     }
 }
